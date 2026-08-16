@@ -15,7 +15,7 @@ Newest entries at the top.
 ---
 
 ### 2026-08-16 — Build Engineer — placeholder cleanup
-**Did:** Removed empty `Init.txt` placeholder files from `/home/runner/work/CrunchTime/CrunchTime/docs`, `/home/runner/work/CrunchTime/CrunchTime/tools`, and `/home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/providers`.
+**Did:** Removed empty `Init.txt` placeholder files from `docs/`, `tools/`, and `tools/asset-gen/providers/`.
 **Why:** These files were unnecessary scaffolding leftovers and can be safely removed.
 **Status:** ready-for-review
 **Open questions:** none
