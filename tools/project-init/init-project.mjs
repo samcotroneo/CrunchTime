@@ -446,6 +446,8 @@ function appendTaskEntry(content, answers, agentName) {
     `**Did:** Ran the project init questionnaire and updated \`docs/GDD.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
     '**Why:** Establish a usable project brief and seed the design docs before implementation starts.',
     '**Status:** done',
+    '**Review cycles:** 0',
+    '**Scope changed:** no',
     `**Open questions:** ${collectOpenQuestionsSummary(answers)}`,
     '',
   ].join('\n');

@@ -7,7 +7,7 @@ and how work moves between agents.
 
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
-| Lead | Routing, breaking GDD into tasks | — (coordinates the rest) |
+| Lead | Routing, breaking GDD into tasks, retros | — (coordinates the rest) |
 | Designer | `docs/GDD.md`, level/mechanic specs | Build Engineer |
 | Gameplay Engineer | `src/` implementation | — |
 | Build Engineer | Build config, asset packing, `tools/asset-gen/` | Designer |
@@ -24,6 +24,8 @@ and how work moves between agents.
    signed off in `docs/TASKS.md`.
 4. QA is always last in a feature's lifecycle, never parallel to Engineer
    on the same feature.
+5. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
+   `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
 
 ## Handoff protocol
 

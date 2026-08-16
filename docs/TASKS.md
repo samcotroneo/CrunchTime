@@ -8,11 +8,24 @@ Newest entries at the top.
 ### [date] — [agent] — [feature/area]
 **Did:** what changed
 **Why:**
-**Status:** ready-for-review | reviewed | ready-for-qa | done
+**Status:** changes-requested | ready-for-review | reviewed | ready-for-qa | done
+**Review cycles:** 0 (times Reviewer sent this back; increments per changes-requested round)
+**Scope changed:** yes/no (did the work drift from the GDD/task as routed?)
 **Open questions:** (for the next agent, or none)
 ```
+New fields are optional on older entries — the retro tool treats missing
+values as unknown, not zero. `changes-requested` entries are what make
+rework loops countable; always log one when Reviewer sends work back.
 
 ---
+
+### 2026-08-16 — Lead — evaluation loop
+**Did:** Added `docs/EVAL.md` (effectiveness rubric: rework rate, review cycles, open-question aging, throughput, scope drift), extended the `docs/TASKS.md` entry format with Review cycles / Scope changed fields and a `changes-requested` status, built `tools/retro/retro.mjs` to score the log, and added `.github/chatmodes/retro.chatmode.md` for guided retros.
+**Why:** Evaluation needs to be baked into the workflow so the project structure keeps improving; the handoff log now doubles as the metrics data source.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Targets in EVAL.md are starting heuristics — revisit after the first real retro cycle.
 
 ### 2026-08-16 — Lead — multi-engine support
 **Did:** Added engine packs under `engines/` (phaser ready, godot stub), taught `tools/project-init/init-project.mjs` and the project-init chatmode to pick an engine and restamp `docs/ARCHITECTURE.md` from the pack template when it changes, and made `AGENTS.md`/`CLAUDE.md` engine-neutral (engine conventions now live in `engines/<engine>/conventions.md`).

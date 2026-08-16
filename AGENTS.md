@@ -24,6 +24,7 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
 - `docs/ARCHITECTURE.md` — how the codebase is organized
 - `docs/ASSETS.md` — asset manifest and generation status
 - `docs/SQUAD.md` — team roster and how agents coordinate
+- `docs/EVAL.md` — effectiveness rubric and retro cadence
 - `docs/TASKS.md` — current work and handoff log (append here when you finish something)
 
 ## Secrets

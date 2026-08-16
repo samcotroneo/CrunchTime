@@ -39,6 +39,13 @@ See `docs/SQUAD.md` for roster and coordination rules. Short version: Lead
 routes work, Designer and Build Engineer can work concurrently, Reviewer
 always gates QA, everyone logs handoffs in `docs/TASKS.md`.
 
+## Evaluating the team
+`docs/EVAL.md` defines the effectiveness rubric (rework rate, review
+cycles, open-question aging, throughput, scope drift). The handoff log
+carries the data — run `node tools/retro/retro.mjs` for the scorecard, or
+use `.github/chatmodes/retro.chatmode.md` for a guided retro that turns
+findings into convention changes.
+
 ## Adding a new engine
 Copy an existing folder in `engines/`, edit its `pack.json`,
 `ARCHITECTURE.md`, and `conventions.md`. The init flow discovers packs
