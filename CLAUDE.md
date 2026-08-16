@@ -11,15 +11,14 @@ mirror it — keep all three in sync, or replace the copies with symlinks
 @docs/SQUAD.md
 
 ## Stack
-- Engine: Phaser 3 (TypeScript)
-- Build: Vite
-- Package manager: npm
+Defined per project in `docs/ARCHITECTURE.md`, stamped from
+`engines/<engine>/` by the project-init flow. Engine packs live in
+`engines/` — see `engines/README.md` to add one.
 
 ## Conventions
-- Scenes live in `src/scenes/`, one Phaser.Scene subclass per file.
-- Entities/game objects in `src/entities/`.
-- Shared systems (state, input, audio) in `src/systems/`.
-- No inline magic numbers for balance values — pull from `src/config/balance.ts`.
+- Engine-specific stack and coding conventions live in
+  `engines/<engine>/conventions.md` — read the pack matching the engine
+  marker in `docs/ARCHITECTURE.md`.
 - Asset keys always match the `key` field in `docs/ASSETS.md`. Never load a
   raw file path directly in game code.
 

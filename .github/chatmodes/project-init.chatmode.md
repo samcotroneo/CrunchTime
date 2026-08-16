@@ -56,6 +56,8 @@ Collect:
 
 Collect:
 
+- engine (one of the packs in `engines/`; keep the current engine unless the
+  user explicitly switches)
 - intended scene flow
 - state management / persistence approach
 
@@ -80,6 +82,8 @@ Summarize the planned writeback before making edits.
 
 - Reuse the existing document headings and structure.
 - Replace placeholders with the user's answers.
+- If the engine changes, restamp `docs/ARCHITECTURE.md` from
+  `engines/<engine>/ARCHITECTURE.md` before applying the user's edits.
 - If the user skips something, write `TBD` or `none` instead of inventing details.
 - Treat existing docs as editable state: on re-entry, preserve confirmed information and update only what the user changes.
 - Append a new handoff entry to `docs/TASKS.md` describing the init pass and listing open questions.

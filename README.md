@@ -1,7 +1,8 @@
 # Game Agent Team — Starter Scaffold
 
-A markdown-driven multi-agent setup for building a Phaser.js game with
-Claude Code and/or GitHub Copilot.
+A markdown-driven multi-agent setup for building games with Claude Code
+and/or GitHub Copilot. Engine-agnostic at the core; per-engine conventions
+live in `engines/` (Phaser 3 included, Godot 4 stubbed).
 
 ## Setup
 
@@ -19,10 +20,11 @@ Claude Code and/or GitHub Copilot.
    - Chat-first: use `.github/chatmodes/project-init.chatmode.md` as the
      staged questionnaire prompt in Copilot-compatible surfaces.
    - Local command: `node tools/project-init/init-project.mjs`
-4. The init flow writes answers back into `docs/GDD.md`,
-   `docs/ARCHITECTURE.md`, `docs/ASSETS.md`, and appends a handoff entry to
-   `docs/TASKS.md`. If you rerun it later, it can be used to refine the
-   existing project brief.
+4. The init flow asks which engine pack to use (from `engines/`) and writes
+   answers back into `docs/GDD.md`, `docs/ARCHITECTURE.md`, `docs/ASSETS.md`,
+   and appends a handoff entry to `docs/TASKS.md`. If you rerun it later, it
+   can be used to refine the existing project brief. Switching engines on a
+   rerun restamps `docs/ARCHITECTURE.md` from the new engine's pack template.
 5. `cd tools/asset-gen && npm install` (no dependencies yet, sets up the
    package), then `cp .env.example .env` and add your `OPENAI_API_KEY`.
 6. Test asset generation with a dry run:
@@ -36,6 +38,11 @@ Claude Code and/or GitHub Copilot.
 See `docs/SQUAD.md` for roster and coordination rules. Short version: Lead
 routes work, Designer and Build Engineer can work concurrently, Reviewer
 always gates QA, everyone logs handoffs in `docs/TASKS.md`.
+
+## Adding a new engine
+Copy an existing folder in `engines/`, edit its `pack.json`,
+`ARCHITECTURE.md`, and `conventions.md`. The init flow discovers packs
+automatically — see `engines/README.md`.
 
 ## Adding audio generation later
 Copy `tools/asset-gen/providers/_template.mjs` to `providers/<name>.mjs`,
