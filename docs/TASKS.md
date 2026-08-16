@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-16 — Lead — setup experience
+**Did:** Fixed broken onboarding pieces (added `.gitignore` covering `.env`, created the missing `tools/asset-gen/.env.example` and `.github/copilot-instructions.md` mirror), added `tools/setup.mjs` bootstrap (node check, tool installs, `.env` creation, mirror drift detection with `--sync`/`--symlinks` repair), and rewrote the README setup as a quickstart covering template-repo, degit, and clone paths.
+**Why:** The old setup had steps referencing files that didn't exist and manual copy/symlink work; onboarding should be three commands.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** "Use this template" requires flipping the repo setting on GitHub — not doable from the repo itself.
+
 ### 2026-08-16 — Lead — lifecycle gaps: milestones, bugs, releases
 **Did:** Added a `## Milestones` section to `docs/GDD.md` (wired through the project-init flow and chatmode), created `docs/BUGS.md` (severity scheme + open→in-progress→fixed→verified lifecycle), and added release management: `docs/RELEASES.md` (milestone-mapped versioning + checklist) with `tools/release/release.mjs` generating `CHANGELOG.md` from completed TASKS.md entries. Updated SQUAD lanes/access, engine pack build/export notes, README, and EVAL.md (release health metric).
 **Why:** The scaffold covered design→build→review→QA→retro but had no milestone structure, no defect tracking, and no path from "built" to "shipped".

@@ -6,33 +6,39 @@ live in `engines/` (Phaser 3 included, Godot 4 stubbed).
 
 ## Setup
 
-1. Copy everything in this archive into your project root (or use it to
-   start a new repo).
-2. `AGENTS.md` is the canonical shared context file. `CLAUDE.md` and
-   `.github/copilot-instructions.md` are copies — keep edits in sync, or
-   replace the copies with symlinks:
+Requirements: Node.js ≥ 18. Nothing else.
+
+Get a copy:
+- **GitHub template:** click "Use this template" on the repo page.
+  (Maintainer: enable it under Settings → Template repository.)
+- **Fresh copy without git history:** `npx degit <owner>/<repo> my-game && cd my-game`
+- **Plain clone:** `git clone <url> my-game && cd my-game`
+
+Then:
+
+1. `node tools/setup.mjs` — installs tool dependencies, creates
+   `tools/asset-gen/.env` from the example, and verifies the `AGENTS.md`
+   mirrors. Safe to re-run.
+2. `node tools/project-init/init-project.mjs` — staged questionnaire that
+   picks your engine pack and seeds `docs/GDD.md`, `docs/ARCHITECTURE.md`,
+   `docs/ASSETS.md`, and `docs/TASKS.md`. Chat-first alternative:
+   `.github/chatmodes/project-init.chatmode.md`. Re-running it later
+   refines the brief; switching engines restamps `docs/ARCHITECTURE.md`.
+3. If you'll generate assets, add your `OPENAI_API_KEY` to
+   `tools/asset-gen/.env` and test with a dry run:
    ```
-   ln -sf AGENTS.md CLAUDE.md
-   ln -sf ../AGENTS.md .github/copilot-instructions.md
-   ```
-3. Initialize the project brief before asking implementation agents to build
-   anything:
-   - Chat-first: use `.github/chatmodes/project-init.chatmode.md` as the
-     staged questionnaire prompt in Copilot-compatible surfaces.
-   - Local command: `node tools/project-init/init-project.mjs`
-4. The init flow asks which engine pack to use (from `engines/`) and writes
-   answers back into `docs/GDD.md`, `docs/ARCHITECTURE.md`, `docs/ASSETS.md`,
-   and appends a handoff entry to `docs/TASKS.md`. If you rerun it later, it
-   can be used to refine the existing project brief. Switching engines on a
-   rerun restamps `docs/ARCHITECTURE.md` from the new engine's pack template.
-5. `cd tools/asset-gen && npm install` (no dependencies yet, sets up the
-   package), then `cp .env.example .env` and add your `OPENAI_API_KEY`.
-6. Test asset generation with a dry run:
-   ```
+   cd tools/asset-gen
    node generate.mjs --key player-idle --category art \
      --prompt "16-bit pixel art idle frame" \
      --out ../../assets/raw/player-idle.png --dry-run
    ```
+
+### Keeping the mirrors in sync
+
+`AGENTS.md` is canonical; `CLAUDE.md` and `.github/copilot-instructions.md`
+mirror it. After editing `AGENTS.md`, run `node tools/setup.mjs --sync` to
+refresh the copies (setup warns you when they drift). Prefer symlinks?
+`node tools/setup.mjs --symlinks`.
 
 ## How the team works
 See `docs/SQUAD.md` for roster and coordination rules. Short version: Lead

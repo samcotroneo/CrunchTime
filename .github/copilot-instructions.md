@@ -1,5 +1,5 @@
 <!-- Mirrors /AGENTS.md. Keep in sync, or replace with a symlink:
-     ln -sf AGENTS.md CLAUDE.md
+     ln -sf ../../AGENTS.md .github/copilot-instructions.md
      (node tools/setup.mjs --sync refreshes this copy) -->
 
 # AGENTS.md
