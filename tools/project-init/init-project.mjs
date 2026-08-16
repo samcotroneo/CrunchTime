@@ -8,6 +8,8 @@ import readline from 'node:readline/promises';
 
 const UNANSWERED = 'TBD';
 const NONE = 'none';
+const GDD_OUT_OF_SCOPE_END = '<!-- project-init:end:out-of-scope -->';
+const ASSET_SECTION_END = '---\nAdd new entries above this line.';
 const GDD_PLACEHOLDERS = new Set([
   '(deadline, team size, must-reuse assets, etc.)',
   '(optional)',
@@ -128,7 +130,7 @@ function isTemplateMechanic(title) {
 }
 
 function isTemplateLevel(title) {
-  return title === 'Level 1 — [name]';
+  return title === '[name]';
 }
 
 function isTemplateAsset(asset) {
@@ -141,7 +143,7 @@ function isTemplateAsset(asset) {
 function parseGdd(content) {
   const mechanicsSection = getSection(content, '## Mechanics', '## Levels / Content');
   const levelsSection = getSection(content, '## Levels / Content', '## Progression & balancing');
-  const outOfScope = getSection(content, '## Out of scope', null)
+  const outOfScope = getSection(content, '## Out of scope', GDD_OUT_OF_SCOPE_END)
     .replace(/^List things explicitly \*not\* being built, so agents don\'t scope-creep\.\s*/m, '')
     .trim();
 
@@ -177,7 +179,7 @@ function parseGdd(content) {
         layoutNotes: parseBulletValue(block.lines.join('\n'), 'Layout notes'),
         newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
       }))
-      .filter((level) => !isTemplateLevel(`Level 1 — ${level.name}`)),
+      .filter((level) => !isTemplateLevel(level.name)),
     progression: {
       difficultyCurve: parseBulletValue(content, 'Difficulty curve'),
       economyScoring: parseBulletValue(content, 'Economy / scoring (if any)'),
@@ -200,7 +202,7 @@ function parseArchitecture(content) {
 }
 
 function parseAssets(content) {
-  const assetsSection = getSection(content, '## Assets', '---');
+  const assetsSection = getSection(content, '## Assets', ASSET_SECTION_END);
   return parseNamedBlocks(assetsSection)
     .map((block) => {
       const blockText = block.lines.join('\n');
@@ -216,8 +218,20 @@ function parseAssets(content) {
     .filter((asset) => !isTemplateAsset(asset));
 }
 
-function parseTaskExampleDate() {
+function getTodayDateString() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function asRecord(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function asString(value, fallback = '') {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function asObjectArray(value) {
+  return Array.isArray(value) ? value.filter((item) => item && typeof item === 'object' && !Array.isArray(item)) : [];
 }
 
 async function ask(rl, label, currentValue, options = {}) {
@@ -230,7 +244,7 @@ async function ask(rl, label, currentValue, options = {}) {
 }
 
 async function askCount(rl, label, currentCount) {
-  while (true) {
+  for (;;) {
     const raw = (await rl.question(`${label} [${currentCount}]: `)).trim();
     if (!raw) return currentCount;
 
@@ -391,9 +405,9 @@ function buildAssetsSection(assets) {
     .join('\n\n');
 }
 
-function appendTaskEntry(content, answers) {
+function appendTaskEntry(content, answers, agentName) {
   const entry = [
-    `### ${parseTaskExampleDate()} — Lead — project init`,
+    `### ${getTodayDateString()} — ${cleanValue(agentName, 'Project Init')} — project init`,
     `**Did:** Ran the project init questionnaire and updated \`docs/GDD.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}".`,
     '**Why:** Establish a usable project brief and seed the design docs before implementation starts.',
     '**Status:** done',
@@ -401,8 +415,14 @@ function appendTaskEntry(content, answers) {
     '',
   ].join('\n');
 
-  const divider = '---\n\n';
-  const dividerIndex = content.indexOf(divider);
+  const formatHeading = '## Format';
+  const formatIndex = content.indexOf(formatHeading);
+  if (formatIndex === -1) {
+    throw new Error('Could not find TASKS format heading.');
+  }
+
+  const divider = '\n---\n\n';
+  const dividerIndex = content.indexOf(divider, formatIndex);
   if (dividerIndex === -1) {
     throw new Error('Could not find TASKS divider.');
   }
@@ -534,7 +554,8 @@ async function collectInteractiveAnswers(existing) {
     printSummary(answers);
     const confirm = (await rl.question('\nWrite these answers into the docs? [y/N]: ')).trim().toLowerCase();
     if (!['y', 'yes'].includes(confirm)) {
-      throw new Error('Cancelled without writing files.');
+      console.log('\nCancelled without writing files.');
+      return null;
     }
 
     return answers;
@@ -544,27 +565,71 @@ async function collectInteractiveAnswers(existing) {
 }
 
 function normalizeAnswersFromFile(raw) {
+  const data = asRecord(raw);
+  const overview = asRecord(data.overview);
+  const progression = asRecord(data.progression);
+  const architecture = asRecord(data.architecture);
+
   return {
-    overview: raw.overview ?? {},
-    mechanics: Array.isArray(raw.mechanics) ? raw.mechanics : [],
-    levels: Array.isArray(raw.levels) ? raw.levels : [],
-    progression: raw.progression ?? {},
-    outOfScope: raw.outOfScope ?? '',
-    projectOpenQuestions: raw.projectOpenQuestions ?? NONE,
-    architecture: raw.architecture ?? {},
-    assets: Array.isArray(raw.assets) ? raw.assets : [],
+    overview: {
+      title: asString(overview.title),
+      elevatorPitch: asString(overview.elevatorPitch),
+      genre: asString(overview.genre),
+      coreLoop: asString(overview.coreLoop),
+      platformInput: asString(overview.platformInput),
+      visualStyle: asString(overview.visualStyle),
+      targetAudience: asString(overview.targetAudience),
+      toneMood: asString(overview.toneMood),
+      targetSessionLength: asString(overview.targetSessionLength),
+      scopeConstraints: asString(overview.scopeConstraints),
+      inspirations: asString(overview.inspirations, NONE),
+    },
+    mechanics: asObjectArray(data.mechanics).map((entry) => ({
+      name: asString(entry.name),
+      status: asString(entry.status, 'draft'),
+      description: asString(entry.description),
+      playerInput: asString(entry.playerInput),
+      winFailCondition: asString(entry.winFailCondition),
+      openQuestions: asString(entry.openQuestions, NONE),
+    })),
+    levels: asObjectArray(data.levels).map((entry) => ({
+      name: asString(entry.name),
+      status: asString(entry.status, 'draft'),
+      goal: asString(entry.goal),
+      layoutNotes: asString(entry.layoutNotes),
+      newMechanicsIntroduced: asString(entry.newMechanicsIntroduced, NONE),
+    })),
+    progression: {
+      difficultyCurve: asString(progression.difficultyCurve),
+      economyScoring: asString(progression.economyScoring, NONE),
+    },
+    outOfScope: asString(data.outOfScope),
+    projectOpenQuestions: asString(data.projectOpenQuestions, NONE),
+    architecture: {
+      sceneFlow: asString(architecture.sceneFlow),
+      stateManagement: asString(architecture.stateManagement),
+    },
+    assets: asObjectArray(data.assets).map((entry) => ({
+      key: asString(entry.key),
+      category: asString(entry.category),
+      type: asString(entry.type),
+      status: asString(entry.status, 'placeholder'),
+      source: asString(entry.source),
+      generation: asString(entry.generation, NONE),
+    })),
   };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
-    console.log('Usage: node init-project.mjs [--repo-root <path>] [--answers-file <path> --yes]');
+    console.log('Usage: node init-project.mjs [--repo-root <path>] [--answers-file <path> --yes] [--agent <name>]');
     console.log('Run without --answers-file for the interactive staged questionnaire.');
     return;
   }
 
   const repoRoot = args['repo-root'] ? resolve(args['repo-root']) : resolve(__dirname, '..', '..');
+  const agentName = asString(args.agent, 'Project Init');
   const docsRoot = join(repoRoot, 'docs');
   const paths = {
     gdd: join(docsRoot, 'GDD.md'),
@@ -575,7 +640,7 @@ async function main() {
 
   for (const path of Object.values(paths)) {
     if (!existsSync(path)) {
-      throw new Error(`Missing required file: ${path}`);
+      throw new Error(`Missing required docs file: ${path}. Recreate it from the repository template before running project init.`);
     }
   }
 
@@ -585,36 +650,45 @@ async function main() {
     assets: parseAssets(readText(paths.assets)),
   };
 
-  const answers = args['answers-file']
-    ? normalizeAnswersFromFile(JSON.parse(readText(resolve(args['answers-file']))))
-    : await collectInteractiveAnswers(existing);
-
-  if (args['answers-file'] && !args.yes) {
-    printSummary(answers);
-    throw new Error('Re-run with --yes to write answers from a file.');
+  if (args.yes && !args['answers-file']) {
+    console.log('--yes is only supported with --answers-file.');
+    return;
   }
 
-  const updatedGdd = replaceSection(
-    replaceSection(
-      replaceSection(
-        replaceSection(
-          replaceSection(readText(paths.gdd), '## Overview', '## Status legend', buildGddOverview(answers.overview)),
-          '## Mechanics',
-          '## Levels / Content',
-          buildMechanicsSection(answers.mechanics)
-        ),
-        '## Levels / Content',
-        '## Progression & balancing',
-        buildLevelsSection(answers.levels)
-      ),
-      '## Progression & balancing',
-      '## Out of scope',
-      buildProgressionSection(answers.progression)
-    ),
-    '## Out of scope',
-    null,
-    buildOutOfScopeSection(answers.outOfScope)
-  );
+  let answers;
+  if (args['answers-file']) {
+    const answersPath = resolve(args['answers-file']);
+    let parsedAnswers;
+    try {
+      parsedAnswers = JSON.parse(readText(answersPath));
+    } catch (error) {
+      throw new Error(`Failed to parse answers file "${answersPath}": ${error.message}`);
+    }
+
+    answers = normalizeAnswersFromFile(parsedAnswers);
+  } else {
+    answers = await collectInteractiveAnswers(existing);
+  }
+
+  if (!answers) {
+    return;
+  }
+
+  if (args['answers-file']) {
+    printSummary(answers);
+  }
+
+  if (args['answers-file'] && !args.yes) {
+    console.log(`\nPreview complete. Re-run with --yes to write answers from ${resolve(args['answers-file'])}.`);
+    return;
+  }
+
+  let updatedGdd = readText(paths.gdd);
+  updatedGdd = replaceSection(updatedGdd, '## Overview', '## Status legend', buildGddOverview(answers.overview));
+  updatedGdd = replaceSection(updatedGdd, '## Mechanics', '## Levels / Content', buildMechanicsSection(answers.mechanics));
+  updatedGdd = replaceSection(updatedGdd, '## Levels / Content', '## Progression & balancing', buildLevelsSection(answers.levels));
+  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Out of scope', buildProgressionSection(answers.progression));
+  updatedGdd = replaceSection(updatedGdd, '## Out of scope', GDD_OUT_OF_SCOPE_END, buildOutOfScopeSection(answers.outOfScope));
 
   const updatedArchitecture = replaceSection(
     replaceSection(
@@ -631,11 +705,11 @@ async function main() {
   const updatedAssets = replaceSection(
     readText(paths.assets),
     '## Assets',
-    '---',
+    ASSET_SECTION_END,
     buildAssetsSection(answers.assets)
   );
 
-  const updatedTasks = appendTaskEntry(readText(paths.tasks), answers);
+  const updatedTasks = appendTaskEntry(readText(paths.tasks), answers, agentName);
 
   writeText(paths.gdd, updatedGdd);
   writeText(paths.architecture, updatedArchitecture);

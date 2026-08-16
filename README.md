@@ -17,7 +17,7 @@ Claude Code and/or GitHub Copilot.
 3. Initialize the project brief before asking implementation agents to build
    anything:
    - Chat-first: use `.github/chatmodes/project-init.chatmode.md` as the
-    staged questionnaire prompt in Copilot-compatible surfaces.
+     staged questionnaire prompt in Copilot-compatible surfaces.
    - Local command: `node tools/project-init/init-project.mjs`
 4. The init flow writes answers back into `docs/GDD.md`,
    `docs/ARCHITECTURE.md`, `docs/ASSETS.md`, and appends a handoff entry to
@@ -28,8 +28,8 @@ Claude Code and/or GitHub Copilot.
 6. Test asset generation with a dry run:
    ```
    node generate.mjs --key player-idle --category art \
-    --prompt "16-bit pixel art idle frame" \
-    --out ../../assets/raw/player-idle.png --dry-run
+     --prompt "16-bit pixel art idle frame" \
+     --out ../../assets/raw/player-idle.png --dry-run
    ```
 
 ## How the team works
