@@ -43,3 +43,5 @@ implement · `implemented` → shipped, changes need a new section.
 
 ## Out of scope
 List things explicitly *not* being built, so agents don't scope-creep.
+
+<!-- project-init:end:out-of-scope -->

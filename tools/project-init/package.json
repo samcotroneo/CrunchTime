@@ -1,0 +1,11 @@
+{
+  "name": "project-init",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "init": "node init-project.mjs"
+  }
+}
