@@ -1,0 +1,51 @@
+# SQUAD.md — Team Roster & Coordination
+
+`AGENTS.md` defines what this project is. This file defines who does what
+and how work moves between agents.
+
+## Roster
+
+| Agent | Owns | Can run in parallel with |
+|---|---|---|
+| Lead | Routing, breaking GDD into tasks | — (coordinates the rest) |
+| Designer | `docs/GDD.md`, level/mechanic specs | Build Engineer |
+| Gameplay Engineer | `src/` implementation | — |
+| Build Engineer | Build config, asset packing, `tools/asset-gen/` | Designer |
+| Reviewer | Code review against `AGENTS.md` conventions | — |
+| QA | Playtesting, bug reports, `docs/ASSETS.md` audits | — |
+
+## Coordination rules
+
+1. Designer and Build Engineer may work concurrently — design specs and
+   build tooling rarely conflict.
+2. Gameplay Engineer only starts once the relevant GDD section is marked
+   `status: ready`.
+3. Reviewer is always a gate. No feature moves to QA until Reviewer has
+   signed off in `docs/TASKS.md`.
+4. QA is always last in a feature's lifecycle, never parallel to Engineer
+   on the same feature.
+
+## Handoff protocol
+
+Agents don't message each other directly — coordination happens through
+files:
+
+- Before starting work, check `docs/TASKS.md` for open items in your lane.
+- On finishing a unit of work, append an entry to `docs/TASKS.md`: what
+  changed, why, and any open questions for the next agent.
+- Never mark your own work "reviewed" or "tested" — only Reviewer and QA
+  make those calls.
+
+## Access policy
+
+- Designer, QA: read-only on `src/`.
+- Gameplay Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
+- Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`;
+  read-only elsewhere.
+- Reviewer: read-only on code, writes only to `docs/TASKS.md`.
+- Lead: read everywhere, writes only to `docs/TASKS.md`.
+
+Each agent's `tools:` field (in `.claude/agents/` or `.github/chatmodes/`)
+should reflect this table. For stricter path-level enforcement, check your
+tool's current permissions/settings docs — this table is the policy those
+settings should implement.
