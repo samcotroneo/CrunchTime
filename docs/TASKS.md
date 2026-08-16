@@ -14,7 +14,7 @@ Newest entries at the top.
 
 ---
 
-### 2026-08-16 — Build Engineer — placeholder cleanup
+### 2026-08-16 — Lead — placeholder cleanup
 **Did:** Removed empty `Init.txt` placeholder files from `docs/`, `tools/`, and `tools/asset-gen/providers/`.
 **Why:** These files were unnecessary scaffolding leftovers and can be safely removed.
 **Status:** ready-for-review
