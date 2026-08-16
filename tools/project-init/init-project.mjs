@@ -135,6 +135,10 @@ function isTemplateLevel(title) {
   return title === '[name]';
 }
 
+function isTemplateMilestone(title) {
+  return title === '[Milestone name]';
+}
+
 function isTemplateAsset(asset) {
   return (
     asset.key === 'player-idle' ||
@@ -145,6 +149,7 @@ function isTemplateAsset(asset) {
 function parseGdd(content) {
   const mechanicsSection = getSection(content, '## Mechanics', '## Levels / Content');
   const levelsSection = getSection(content, '## Levels / Content', '## Progression & balancing');
+  const milestonesSection = getSection(content, '## Milestones', '## Out of scope');
   const outOfScope = getSection(content, '## Out of scope', GDD_OUT_OF_SCOPE_END)
     .replace(/^List things explicitly \*not\* being built, so agents don\'t scope-creep\.\s*/m, '')
     .trim();
@@ -182,6 +187,15 @@ function parseGdd(content) {
         newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
       }))
       .filter((level) => !isTemplateLevel(level.name)),
+    milestones: parseNamedBlocks(milestonesSection)
+      .map((block) => ({
+        name: block.title,
+        target: parseBulletValue(block.lines.join('\n'), 'Target'),
+        goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
+        exitCriteria: parseBulletValue(block.lines.join('\n'), 'Exit criteria'),
+        status: parseBulletValue(block.lines.join('\n'), 'Status'),
+      }))
+      .filter((milestone) => !isTemplateMilestone(milestone.name)),
     progression: {
       difficultyCurve: parseBulletValue(content, 'Difficulty curve'),
       economyScoring: parseBulletValue(content, 'Economy / scoring (if any)'),
@@ -407,6 +421,30 @@ function buildProgressionSection(progression) {
   ].join('\n');
 }
 
+function buildMilestonesSection(milestones) {
+  if (!milestones.length) {
+    return [
+      '### TBD milestone',
+      '- **Target:** TBD',
+      '- **Goal:** TBD',
+      '- **Exit criteria:** TBD',
+      '- **Status:** planned',
+    ].join('\n');
+  }
+
+  return milestones
+    .map((milestone) =>
+      [
+        `### ${cleanValue(milestone.name, 'TBD milestone')}`,
+        `- **Target:** ${cleanValue(milestone.target)}`,
+        `- **Goal:** ${cleanValue(milestone.goal)}`,
+        `- **Exit criteria:** ${cleanValue(milestone.exitCriteria)}`,
+        `- **Status:** ${cleanValue(milestone.status, 'planned')}`,
+      ].join('\n')
+    )
+    .join('\n\n');
+}
+
 function buildOutOfScopeSection(outOfScope) {
   return cleanValue(outOfScope);
 }
@@ -474,6 +512,7 @@ function printSummary(answers) {
   console.log(`- Genre: ${cleanValue(answers.overview.genre)}`);
   console.log(`- Mechanics: ${summarizeList(answers.mechanics, (item) => cleanValue(item.name, 'TBD mechanic'))}`);
   console.log(`- Levels: ${summarizeList(answers.levels, (item) => cleanValue(item.name, 'TBD'))}`);
+  console.log(`- Milestones: ${summarizeList(answers.milestones, (item) => cleanValue(item.name, 'TBD milestone'))}`);
   console.log(`- Assets: ${summarizeList(answers.assets, (item) => cleanValue(item.key, 'tbd-asset'))}`);
   console.log(`- Open questions: ${collectOpenQuestionsSummary(answers)}`);
 }
@@ -545,6 +584,26 @@ async function collectInteractiveAnswers(existing, engines) {
       economyScoring: await ask(rl, 'Economy / scoring', existing.gdd.progression.economyScoring, { fallback: NONE }),
     };
 
+    const milestones = await collectRepeatedEntries(
+      rl,
+      'milestones',
+      existing.gdd.milestones,
+      () => ({
+        name: '',
+        target: '',
+        goal: '',
+        exitCriteria: '',
+        status: 'planned',
+      }),
+      () => [
+        { key: 'name', label: 'Milestone name (e.g. Prototype, Vertical slice, Alpha, Beta, Release)' },
+        { key: 'target', label: 'Target (date or condition)' },
+        { key: 'goal', label: 'Goal (what exists when reached)' },
+        { key: 'exitCriteria', label: 'Exit criteria' },
+        { key: 'status', label: 'Status', options: { fallback: 'planned' } },
+      ]
+    );
+
     const outOfScope = await ask(rl, 'Out-of-scope items', existing.gdd.outOfScope, { fallback: UNANSWERED });
     const projectOpenQuestions = await ask(rl, 'Project-wide open questions', '', { fallback: NONE });
 
@@ -588,6 +647,7 @@ async function collectInteractiveAnswers(existing, engines) {
       mechanics,
       levels,
       progression,
+      milestones,
       outOfScope,
       projectOpenQuestions,
       engine,
@@ -648,6 +708,13 @@ function normalizeAnswersFromFile(raw) {
       difficultyCurve: asString(progression.difficultyCurve),
       economyScoring: asString(progression.economyScoring, NONE),
     },
+    milestones: asObjectArray(data.milestones).map((entry) => ({
+      name: asString(entry.name),
+      target: asString(entry.target),
+      goal: asString(entry.goal),
+      exitCriteria: asString(entry.exitCriteria),
+      status: asString(entry.status, 'planned'),
+    })),
     outOfScope: asString(data.outOfScope),
     projectOpenQuestions: asString(data.projectOpenQuestions, NONE),
     engine: asString(data.engine),
@@ -738,7 +805,8 @@ async function main() {
   updatedGdd = replaceSection(updatedGdd, '## Overview', '## Status legend', buildGddOverview(answers.overview));
   updatedGdd = replaceSection(updatedGdd, '## Mechanics', '## Levels / Content', buildMechanicsSection(answers.mechanics));
   updatedGdd = replaceSection(updatedGdd, '## Levels / Content', '## Progression & balancing', buildLevelsSection(answers.levels));
-  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Out of scope', buildProgressionSection(answers.progression));
+  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Milestones', buildProgressionSection(answers.progression));
+  updatedGdd = replaceSection(updatedGdd, '## Milestones', '## Out of scope', buildMilestonesSection(answers.milestones));
   updatedGdd = replaceSection(updatedGdd, '## Out of scope', GDD_OUT_OF_SCOPE_END, buildOutOfScopeSection(answers.outOfScope));
 
   let architectureBase = readText(paths.architecture);

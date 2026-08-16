@@ -46,6 +46,13 @@ carries the data — run `node tools/retro/retro.mjs` for the scorecard, or
 use `.github/chatmodes/retro.chatmode.md` for a guided retro that turns
 findings into convention changes.
 
+## Bugs and releases
+QA files and verifies defects in `docs/BUGS.md` (severity + lifecycle
+defined there). Releases follow `docs/RELEASES.md`: milestone-mapped
+versioning, a checklist gated on bug status, and
+`node tools/release/release.mjs --version <x.y.z>` to generate
+`CHANGELOG.md` from completed TASKS.md entries.
+
 ## Adding a new engine
 Copy an existing folder in `engines/`, edit its `pack.json`,
 `ARCHITECTURE.md`, and `conventions.md`. The init flow discovers packs

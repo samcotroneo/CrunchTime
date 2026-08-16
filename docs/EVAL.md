@@ -18,6 +18,7 @@ format carries the data.
 | Open-question aging | `**Open questions:**` ≠ none, days since entry date | Handoffs that leave the next agent stuck. |
 | Throughput | `done` entries per week | Delivery pace over time. |
 | Scope drift | `**Scope changed:**` yes ratio | How often routed tasks didn't match reality — a routing/GDD quality signal. |
+| Release health | open blocker/major bugs in `docs/BUGS.md` | Gates releases — see `docs/RELEASES.md`. (Manual for now.) |
 
 ## Targets
 

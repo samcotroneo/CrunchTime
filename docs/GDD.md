@@ -41,6 +41,14 @@ implement · `implemented` → shipped, changes need a new section.
 - **Difficulty curve:**
 - **Economy / scoring (if any):**
 
+## Milestones
+
+### [Milestone name]
+- **Target:** (date or "when X is true")
+- **Goal:** what exists when this milestone is reached
+- **Exit criteria:** how we know it's met
+- **Status:** planned
+
 ## Out of scope
 List things explicitly *not* being built, so agents don't scope-creep.
 

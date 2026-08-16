@@ -10,9 +10,9 @@ and how work moves between agents.
 | Lead | Routing, breaking GDD into tasks, retros | — (coordinates the rest) |
 | Designer | `docs/GDD.md`, level/mechanic specs | Build Engineer |
 | Gameplay Engineer | `src/` implementation | — |
-| Build Engineer | Build config, asset packing, `tools/asset-gen/` | Designer |
+| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | Playtesting, bug reports, `docs/ASSETS.md` audits | — |
+| QA | Playtesting, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
 
 ## Coordination rules
 
@@ -26,6 +26,8 @@ and how work moves between agents.
    on the same feature.
 5. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
    `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
+6. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
+   marks a bug `verified`.
 
 ## Handoff protocol
 
@@ -40,10 +42,10 @@ files:
 
 ## Access policy
 
-- Designer, QA: read-only on `src/`.
+- Designer, QA: read-only on `src/`. QA also writes `docs/BUGS.md`.
 - Gameplay Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
-- Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`;
-  read-only elsewhere.
+- Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`,
+  `docs/RELEASES.md`, `CHANGELOG.md`; read-only elsewhere.
 - Reviewer: read-only on code, writes only to `docs/TASKS.md`.
 - Lead: read everywhere, writes only to `docs/TASKS.md`.
 

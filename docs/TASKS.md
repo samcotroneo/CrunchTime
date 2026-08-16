@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-16 — Lead — lifecycle gaps: milestones, bugs, releases
+**Did:** Added a `## Milestones` section to `docs/GDD.md` (wired through the project-init flow and chatmode), created `docs/BUGS.md` (severity scheme + open→in-progress→fixed→verified lifecycle), and added release management: `docs/RELEASES.md` (milestone-mapped versioning + checklist) with `tools/release/release.mjs` generating `CHANGELOG.md` from completed TASKS.md entries. Updated SQUAD lanes/access, engine pack build/export notes, README, and EVAL.md (release health metric).
+**Why:** The scaffold covered design→build→review→QA→retro but had no milestone structure, no defect tracking, and no path from "built" to "shipped".
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Release health (open blocker/major bugs) is manual in EVAL.md — worth teaching retro.mjs to parse BUGS.md once real bug data exists?
+
 ### 2026-08-16 — Lead — evaluation loop
 **Did:** Added `docs/EVAL.md` (effectiveness rubric: rework rate, review cycles, open-question aging, throughput, scope drift), extended the `docs/TASKS.md` entry format with Review cycles / Scope changed fields and a `changes-requested` status, built `tools/retro/retro.mjs` to score the log, and added `.github/chatmodes/retro.chatmode.md` for guided retros.
 **Why:** Evaluation needs to be baked into the workflow so the project structure keeps improving; the handoff log now doubles as the metrics data source.

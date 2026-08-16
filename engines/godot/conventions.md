@@ -13,3 +13,4 @@
 - Entity scripts in `scripts/entities/`.
 - Shared systems (state, input, audio) as autoload singletons in `scripts/systems/`.
 - No inline magic numbers for balance values — pull from `scripts/config/balance.gd`.
+- Export: Godot export presets (`export_presets.cfg`) produce per-platform builds.

@@ -10,3 +10,4 @@
 - Entities/game objects in `src/entities/`.
 - Shared systems (state, input, audio) in `src/systems/`.
 - No inline magic numbers for balance values — pull from `src/config/balance.ts`.
+- Build: `npm run build` (Vite) produces the static web bundle in `dist/`.

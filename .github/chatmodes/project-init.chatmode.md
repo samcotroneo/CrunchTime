@@ -49,6 +49,8 @@ Collect:
 - at least the first planned level or content slice
 - difficulty curve
 - economy / scoring
+- milestones (prototype → vertical slice → alpha → beta → release, with
+  target, goal, and exit criteria each)
 - out-of-scope items
 - unresolved design questions
 

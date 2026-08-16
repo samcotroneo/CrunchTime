@@ -25,6 +25,8 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
 - `docs/ASSETS.md` — asset manifest and generation status
 - `docs/SQUAD.md` — team roster and how agents coordinate
 - `docs/EVAL.md` — effectiveness rubric and retro cadence
+- `docs/BUGS.md` — defect tracker (QA files and verifies)
+- `docs/RELEASES.md` — versioning and release checklist
 - `docs/TASKS.md` — current work and handoff log (append here when you finish something)
 
 ## Secrets
