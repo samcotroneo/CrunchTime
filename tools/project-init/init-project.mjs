@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stdin as input, stdout as output } from 'node:process';
@@ -14,10 +14,12 @@ const GDD_PLACEHOLDERS = new Set([
   '(deadline, team size, must-reuse assets, etc.)',
   '(optional)',
 ]);
-const ARCHITECTURE_PLACEHOLDERS = new Set([
-  'Describe scene transitions here (Boot → Preload → MainMenu → Game →\nGameOver, etc.) once decided.',
-  'Describe how game state persists across scenes (Phaser registry, a shared\nstore, save file) once decided.',
-]);
+const DEFAULT_ENGINE = 'phaser';
+const ENGINE_MARKER_PATTERN = /<!--\s*engine:\s*([a-z0-9-]+)\s*-->/i;
+
+function isArchitecturePlaceholder(value) {
+  return `${value ?? ''}`.trim().endsWith('once decided.');
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -133,6 +135,10 @@ function isTemplateLevel(title) {
   return title === '[name]';
 }
 
+function isTemplateMilestone(title) {
+  return title === '[Milestone name]';
+}
+
 function isTemplateAsset(asset) {
   return (
     asset.key === 'player-idle' ||
@@ -143,6 +149,7 @@ function isTemplateAsset(asset) {
 function parseGdd(content) {
   const mechanicsSection = getSection(content, '## Mechanics', '## Levels / Content');
   const levelsSection = getSection(content, '## Levels / Content', '## Progression & balancing');
+  const milestonesSection = getSection(content, '## Milestones', '## Out of scope');
   const outOfScope = getSection(content, '## Out of scope', GDD_OUT_OF_SCOPE_END)
     .replace(/^List things explicitly \*not\* being built, so agents don\'t scope-creep\.\s*/m, '')
     .trim();
@@ -180,6 +187,15 @@ function parseGdd(content) {
         newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
       }))
       .filter((level) => !isTemplateLevel(level.name)),
+    milestones: parseNamedBlocks(milestonesSection)
+      .map((block) => ({
+        name: block.title,
+        target: parseBulletValue(block.lines.join('\n'), 'Target'),
+        goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
+        exitCriteria: parseBulletValue(block.lines.join('\n'), 'Exit criteria'),
+        status: parseBulletValue(block.lines.join('\n'), 'Status'),
+      }))
+      .filter((milestone) => !isTemplateMilestone(milestone.name)),
     progression: {
       difficultyCurve: parseBulletValue(content, 'Difficulty curve'),
       economyScoring: parseBulletValue(content, 'Economy / scoring (if any)'),
@@ -190,15 +206,48 @@ function parseGdd(content) {
 
 function parseArchitecture(content) {
   return {
-    sceneFlow: stripTemplateValue(
-      getSection(content, '## Scene flow', '## State management').trim(),
-      ARCHITECTURE_PLACEHOLDERS
+    engine: detectEngine(content),
+    sceneFlow: stripArchitecturePlaceholder(
+      getSection(content, '## Scene flow', '## State management').trim()
     ),
-    stateManagement: stripTemplateValue(
-      getSection(content, '## State management', '## Asset pipeline').trim(),
-      ARCHITECTURE_PLACEHOLDERS
+    stateManagement: stripArchitecturePlaceholder(
+      getSection(content, '## State management', '## Asset pipeline').trim()
     ),
   };
+}
+
+function detectEngine(content) {
+  const match = `${content ?? ''}`.match(ENGINE_MARKER_PATTERN);
+  return match ? match[1].toLowerCase() : '';
+}
+
+function stripArchitecturePlaceholder(value) {
+  const normalized = `${value ?? ''}`.trim();
+  return isArchitecturePlaceholder(normalized) ? '' : normalized;
+}
+
+function listEngines(enginesRoot) {
+  if (!existsSync(enginesRoot)) return [];
+  return readdirSync(enginesRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(join(enginesRoot, entry.name, 'pack.json')))
+    .map((entry) => {
+      try {
+        const pack = JSON.parse(readText(join(enginesRoot, entry.name, 'pack.json')));
+        return { name: entry.name, label: asString(pack.label, entry.name) };
+      } catch {
+        return { name: entry.name, label: entry.name };
+      }
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function resolveEngine(engineName, engines, enginesRoot) {
+  const name = `${engineName ?? ''}`.trim().toLowerCase() || DEFAULT_ENGINE;
+  if (!engines.some((engine) => engine.name === name)) {
+    const available = engines.map((engine) => engine.name).join(', ') || 'none';
+    throw new Error(`Unknown engine "${name}". Available packs in engines/: ${available}`);
+  }
+  return { name, templatePath: join(enginesRoot, name, 'ARCHITECTURE.md') };
 }
 
 function parseAssets(content) {
@@ -372,6 +421,30 @@ function buildProgressionSection(progression) {
   ].join('\n');
 }
 
+function buildMilestonesSection(milestones) {
+  if (!milestones.length) {
+    return [
+      '### TBD milestone',
+      '- **Target:** TBD',
+      '- **Goal:** TBD',
+      '- **Exit criteria:** TBD',
+      '- **Status:** planned',
+    ].join('\n');
+  }
+
+  return milestones
+    .map((milestone) =>
+      [
+        `### ${cleanValue(milestone.name, 'TBD milestone')}`,
+        `- **Target:** ${cleanValue(milestone.target)}`,
+        `- **Goal:** ${cleanValue(milestone.goal)}`,
+        `- **Exit criteria:** ${cleanValue(milestone.exitCriteria)}`,
+        `- **Status:** ${cleanValue(milestone.status, 'planned')}`,
+      ].join('\n')
+    )
+    .join('\n\n');
+}
+
 function buildOutOfScopeSection(outOfScope) {
   return cleanValue(outOfScope);
 }
@@ -408,9 +481,11 @@ function buildAssetsSection(assets) {
 function appendTaskEntry(content, answers, agentName) {
   const entry = [
     `### ${getTodayDateString()} — ${cleanValue(agentName, 'Project Init')} — project init`,
-    `**Did:** Ran the project init questionnaire and updated \`docs/GDD.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}".`,
+    `**Did:** Ran the project init questionnaire and updated \`docs/GDD.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
     '**Why:** Establish a usable project brief and seed the design docs before implementation starts.',
     '**Status:** done',
+    '**Review cycles:** 0',
+    '**Scope changed:** no',
     `**Open questions:** ${collectOpenQuestionsSummary(answers)}`,
     '',
   ].join('\n');
@@ -432,15 +507,17 @@ function appendTaskEntry(content, answers, agentName) {
 
 function printSummary(answers) {
   console.log('\nSummary');
+  console.log(`- Engine: ${cleanValue(answers.engine)}`);
   console.log(`- Title: ${cleanValue(answers.overview.title)}`);
   console.log(`- Genre: ${cleanValue(answers.overview.genre)}`);
   console.log(`- Mechanics: ${summarizeList(answers.mechanics, (item) => cleanValue(item.name, 'TBD mechanic'))}`);
   console.log(`- Levels: ${summarizeList(answers.levels, (item) => cleanValue(item.name, 'TBD'))}`);
+  console.log(`- Milestones: ${summarizeList(answers.milestones, (item) => cleanValue(item.name, 'TBD milestone'))}`);
   console.log(`- Assets: ${summarizeList(answers.assets, (item) => cleanValue(item.key, 'tbd-asset'))}`);
   console.log(`- Open questions: ${collectOpenQuestionsSummary(answers)}`);
 }
 
-async function collectInteractiveAnswers(existing) {
+async function collectInteractiveAnswers(existing, engines) {
   const rl = readline.createInterface({ input, output });
 
   try {
@@ -507,10 +584,36 @@ async function collectInteractiveAnswers(existing) {
       economyScoring: await ask(rl, 'Economy / scoring', existing.gdd.progression.economyScoring, { fallback: NONE }),
     };
 
+    const milestones = await collectRepeatedEntries(
+      rl,
+      'milestones',
+      existing.gdd.milestones,
+      () => ({
+        name: '',
+        target: '',
+        goal: '',
+        exitCriteria: '',
+        status: 'planned',
+      }),
+      () => [
+        { key: 'name', label: 'Milestone name (e.g. Prototype, Vertical slice, Alpha, Beta, Release)' },
+        { key: 'target', label: 'Target (date or condition)' },
+        { key: 'goal', label: 'Goal (what exists when reached)' },
+        { key: 'exitCriteria', label: 'Exit criteria' },
+        { key: 'status', label: 'Status', options: { fallback: 'planned' } },
+      ]
+    );
+
     const outOfScope = await ask(rl, 'Out-of-scope items', existing.gdd.outOfScope, { fallback: UNANSWERED });
     const projectOpenQuestions = await ask(rl, 'Project-wide open questions', '', { fallback: NONE });
 
     console.log('\nStage 3 — technical structure');
+    const engineOptions = engines.map((engine) => `${engine.name} (${engine.label})`).join(', ');
+    const engine = await ask(
+      rl,
+      `Engine — one of: ${engineOptions}`,
+      existing.architecture.engine || DEFAULT_ENGINE
+    );
     const architecture = {
       sceneFlow: await ask(rl, 'Scene flow', existing.architecture.sceneFlow),
       stateManagement: await ask(rl, 'State management / persistence', existing.architecture.stateManagement),
@@ -544,8 +647,10 @@ async function collectInteractiveAnswers(existing) {
       mechanics,
       levels,
       progression,
+      milestones,
       outOfScope,
       projectOpenQuestions,
+      engine,
       architecture,
       assets,
     };
@@ -603,8 +708,16 @@ function normalizeAnswersFromFile(raw) {
       difficultyCurve: asString(progression.difficultyCurve),
       economyScoring: asString(progression.economyScoring, NONE),
     },
+    milestones: asObjectArray(data.milestones).map((entry) => ({
+      name: asString(entry.name),
+      target: asString(entry.target),
+      goal: asString(entry.goal),
+      exitCriteria: asString(entry.exitCriteria),
+      status: asString(entry.status, 'planned'),
+    })),
     outOfScope: asString(data.outOfScope),
     projectOpenQuestions: asString(data.projectOpenQuestions, NONE),
+    engine: asString(data.engine),
     architecture: {
       sceneFlow: asString(architecture.sceneFlow),
       stateManagement: asString(architecture.stateManagement),
@@ -631,6 +744,8 @@ async function main() {
   const repoRoot = args['repo-root'] ? resolve(args['repo-root']) : resolve(__dirname, '..', '..');
   const agentName = asString(args.agent, 'Project Init');
   const docsRoot = join(repoRoot, 'docs');
+  const enginesRoot = join(repoRoot, 'engines');
+  const engines = listEngines(enginesRoot);
   const paths = {
     gdd: join(docsRoot, 'GDD.md'),
     architecture: join(docsRoot, 'ARCHITECTURE.md'),
@@ -667,12 +782,15 @@ async function main() {
 
     answers = normalizeAnswersFromFile(parsedAnswers);
   } else {
-    answers = await collectInteractiveAnswers(existing);
+    answers = await collectInteractiveAnswers(existing, engines);
   }
 
   if (!answers) {
     return;
   }
+
+  const selectedEngine = resolveEngine(answers.engine || existing.architecture.engine, engines, enginesRoot);
+  answers.engine = selectedEngine.name;
 
   if (args['answers-file']) {
     printSummary(answers);
@@ -687,12 +805,19 @@ async function main() {
   updatedGdd = replaceSection(updatedGdd, '## Overview', '## Status legend', buildGddOverview(answers.overview));
   updatedGdd = replaceSection(updatedGdd, '## Mechanics', '## Levels / Content', buildMechanicsSection(answers.mechanics));
   updatedGdd = replaceSection(updatedGdd, '## Levels / Content', '## Progression & balancing', buildLevelsSection(answers.levels));
-  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Out of scope', buildProgressionSection(answers.progression));
+  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Milestones', buildProgressionSection(answers.progression));
+  updatedGdd = replaceSection(updatedGdd, '## Milestones', '## Out of scope', buildMilestonesSection(answers.milestones));
   updatedGdd = replaceSection(updatedGdd, '## Out of scope', GDD_OUT_OF_SCOPE_END, buildOutOfScopeSection(answers.outOfScope));
+
+  let architectureBase = readText(paths.architecture);
+  if (selectedEngine.name !== existing.architecture.engine) {
+    architectureBase = readText(selectedEngine.templatePath);
+    console.log(`\nStamping engines/${selectedEngine.name}/ARCHITECTURE.md into docs/ARCHITECTURE.md.`);
+  }
 
   const updatedArchitecture = replaceSection(
     replaceSection(
-      readText(paths.architecture),
+      architectureBase,
       '## Scene flow',
       '## State management',
       buildArchitectureSection(answers.architecture.sceneFlow)

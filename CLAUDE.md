@@ -1,5 +1,6 @@
 <!-- Mirrors /AGENTS.md. Keep in sync, or replace with a symlink:
-     ln -sf AGENTS.md CLAUDE.md -->
+     ln -sf AGENTS.md CLAUDE.md
+     (node tools/setup.mjs --sync refreshes this copy) -->
 
 # AGENTS.md
 
@@ -11,15 +12,14 @@ mirror it — keep all three in sync, or replace the copies with symlinks
 @docs/SQUAD.md
 
 ## Stack
-- Engine: Phaser 3 (TypeScript)
-- Build: Vite
-- Package manager: npm
+Defined per project in `docs/ARCHITECTURE.md`, stamped from
+`engines/<engine>/` by the project-init flow. Engine packs live in
+`engines/` — see `engines/README.md` to add one.
 
 ## Conventions
-- Scenes live in `src/scenes/`, one Phaser.Scene subclass per file.
-- Entities/game objects in `src/entities/`.
-- Shared systems (state, input, audio) in `src/systems/`.
-- No inline magic numbers for balance values — pull from `src/config/balance.ts`.
+- Engine-specific stack and coding conventions live in
+  `engines/<engine>/conventions.md` — read the pack matching the engine
+  marker in `docs/ARCHITECTURE.md`.
 - Asset keys always match the `key` field in `docs/ASSETS.md`. Never load a
   raw file path directly in game code.
 
@@ -28,6 +28,9 @@ mirror it — keep all three in sync, or replace the copies with symlinks
 - `docs/ARCHITECTURE.md` — how the codebase is organized
 - `docs/ASSETS.md` — asset manifest and generation status
 - `docs/SQUAD.md` — team roster and how agents coordinate
+- `docs/EVAL.md` — effectiveness rubric and retro cadence
+- `docs/BUGS.md` — defect tracker (QA files and verifies)
+- `docs/RELEASES.md` — versioning and release checklist
 - `docs/TASKS.md` — current work and handoff log (append here when you finish something)
 
 ## Secrets

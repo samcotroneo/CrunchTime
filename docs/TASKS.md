@@ -8,11 +8,46 @@ Newest entries at the top.
 ### [date] — [agent] — [feature/area]
 **Did:** what changed
 **Why:**
-**Status:** ready-for-review | reviewed | ready-for-qa | done
+**Status:** changes-requested | ready-for-review | reviewed | ready-for-qa | done
+**Review cycles:** 0 (times Reviewer sent this back; increments per changes-requested round)
+**Scope changed:** yes/no (did the work drift from the GDD/task as routed?)
 **Open questions:** (for the next agent, or none)
 ```
+New fields are optional on older entries — the retro tool treats missing
+values as unknown, not zero. `changes-requested` entries are what make
+rework loops countable; always log one when Reviewer sends work back.
 
 ---
+
+### 2026-08-16 — Lead — setup experience
+**Did:** Fixed broken onboarding pieces (added `.gitignore` covering `.env`, created the missing `tools/asset-gen/.env.example` and `.github/copilot-instructions.md` mirror), added `tools/setup.mjs` bootstrap (node check, tool installs, `.env` creation, mirror drift detection with `--sync`/`--symlinks` repair), and rewrote the README setup as a quickstart covering template-repo, degit, and clone paths.
+**Why:** The old setup had steps referencing files that didn't exist and manual copy/symlink work; onboarding should be three commands.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** "Use this template" requires flipping the repo setting on GitHub — not doable from the repo itself.
+
+### 2026-08-16 — Lead — lifecycle gaps: milestones, bugs, releases
+**Did:** Added a `## Milestones` section to `docs/GDD.md` (wired through the project-init flow and chatmode), created `docs/BUGS.md` (severity scheme + open→in-progress→fixed→verified lifecycle), and added release management: `docs/RELEASES.md` (milestone-mapped versioning + checklist) with `tools/release/release.mjs` generating `CHANGELOG.md` from completed TASKS.md entries. Updated SQUAD lanes/access, engine pack build/export notes, README, and EVAL.md (release health metric).
+**Why:** The scaffold covered design→build→review→QA→retro but had no milestone structure, no defect tracking, and no path from "built" to "shipped".
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Release health (open blocker/major bugs) is manual in EVAL.md — worth teaching retro.mjs to parse BUGS.md once real bug data exists?
+
+### 2026-08-16 — Lead — evaluation loop
+**Did:** Added `docs/EVAL.md` (effectiveness rubric: rework rate, review cycles, open-question aging, throughput, scope drift), extended the `docs/TASKS.md` entry format with Review cycles / Scope changed fields and a `changes-requested` status, built `tools/retro/retro.mjs` to score the log, and added `.github/chatmodes/retro.chatmode.md` for guided retros.
+**Why:** Evaluation needs to be baked into the workflow so the project structure keeps improving; the handoff log now doubles as the metrics data source.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Targets in EVAL.md are starting heuristics — revisit after the first real retro cycle.
+
+### 2026-08-16 — Lead — multi-engine support
+**Did:** Added engine packs under `engines/` (phaser ready, godot stub), taught `tools/project-init/init-project.mjs` and the project-init chatmode to pick an engine and restamp `docs/ARCHITECTURE.md` from the pack template when it changes, and made `AGENTS.md`/`CLAUDE.md` engine-neutral (engine conventions now live in `engines/<engine>/conventions.md`).
+**Why:** The scaffold was Phaser-specific; engine packs let new engines (and their skills) be added as drop-in folders without touching the core scaffold.
+**Status:** ready-for-review
+**Open questions:** Godot pack content is a stub — needs a Godot-experienced pass before first real use. Should engine packs also own per-engine skills/chatmodes, or keep those global?
 
 ### 2026-08-16 — Lead — project init flow
 **Did:** Added a staged project-init questionnaire via `.github/chatmodes/project-init.chatmode.md` and `tools/project-init/init-project.mjs`, then documented the workflow in `README.md`.

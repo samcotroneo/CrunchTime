@@ -1,3 +1,7 @@
+<!-- Mirrors /AGENTS.md. Keep in sync, or replace with a symlink:
+     ln -sf ../../AGENTS.md .github/copilot-instructions.md
+     (node tools/setup.mjs --sync refreshes this copy) -->
+
 # AGENTS.md
 
 Shared instructions for every agent (human or AI) working on this project.

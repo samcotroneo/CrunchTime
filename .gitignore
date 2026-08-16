@@ -1,0 +1,13 @@
+# Secrets — never commit (see AGENTS.md)
+.env
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+assets/build/
+
+# Logs / OS noise
+tools/asset-gen/log.jsonl
+.DS_Store
