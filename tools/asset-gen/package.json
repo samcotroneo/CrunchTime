@@ -1,0 +1,9 @@
+{
+  "name": "asset-gen",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "generate": "node generate.mjs"
+  }
+}
