@@ -14,6 +14,12 @@ Newest entries at the top.
 
 ---
 
+### 2026-08-16 — Lead — project init flow
+**Did:** Added a staged project-init questionnaire via `.github/chatmodes/project-init.chatmode.md` and `tools/project-init/init-project.mjs`, then documented the workflow in `README.md`.
+**Why:** New projects need a repeatable way to turn initial answers into seeded design docs before implementation work begins.
+**Status:** ready-for-review
+**Open questions:** none
+
 ### 2026-08-16 — Lead — placeholder cleanup
 **Did:** Removed the empty placeholder files `docs/Init.txt`, `tools/Init.txt`, and `tools/asset-gen/providers/Init.txt`.
 **Why:** These files were unnecessary scaffolding leftovers and can be safely removed.

@@ -14,15 +14,22 @@ Claude Code and/or GitHub Copilot.
    ln -sf AGENTS.md CLAUDE.md
    ln -sf ../AGENTS.md .github/copilot-instructions.md
    ```
-3. Fill in `docs/GDD.md` with your actual game concept before asking any
-   agent to implement anything.
-4. `cd tools/asset-gen && npm install` (no dependencies yet, sets up the
+3. Initialize the project brief before asking implementation agents to build
+   anything:
+   - Chat-first: use `.github/chatmodes/project-init.chatmode.md` as the
+    staged questionnaire prompt in Copilot-compatible surfaces.
+   - Local command: `node tools/project-init/init-project.mjs`
+4. The init flow writes answers back into `docs/GDD.md`,
+   `docs/ARCHITECTURE.md`, `docs/ASSETS.md`, and appends a handoff entry to
+   `docs/TASKS.md`. If you rerun it later, it can be used to refine the
+   existing project brief.
+5. `cd tools/asset-gen && npm install` (no dependencies yet, sets up the
    package), then `cp .env.example .env` and add your `OPENAI_API_KEY`.
-5. Test asset generation with a dry run:
+6. Test asset generation with a dry run:
    ```
    node generate.mjs --key player-idle --category art \
-     --prompt "16-bit pixel art idle frame" \
-     --out ../../assets/raw/player-idle.png --dry-run
+    --prompt "16-bit pixel art idle frame" \
+    --out ../../assets/raw/player-idle.png --dry-run
    ```
 
 ## How the team works
