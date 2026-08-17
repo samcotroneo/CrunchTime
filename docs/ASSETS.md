@@ -78,10 +78,10 @@ generation:                        old freeform prompt (kept for backward compat
 
 ---
 Add new entries above this line. Default robust flow:
-`node /home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/generate.mjs --manifest /home/runner/work/CrunchTime/CrunchTime/docs/ASSETS.md`
+`node tools/asset-gen/generate.mjs --manifest docs/ASSETS.md`
 
 Single-key from manifest:
-`node /home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/generate.mjs --manifest /home/runner/work/CrunchTime/CrunchTime/docs/ASSETS.md --key <key>`
+`node tools/asset-gen/generate.mjs --manifest docs/ASSETS.md --key <key>`
 
 Debug mode (ad-hoc, not default):
-`node /home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/generate.mjs --key <key> --category <category> --prompt "<prompt>" --out <path>`
+`node tools/asset-gen/generate.mjs --key <key> --category <category> --prompt "<prompt>" --out <path>`

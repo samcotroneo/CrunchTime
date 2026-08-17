@@ -2,7 +2,7 @@
 // Selected when ART_PROVIDER=openai in tools/asset-gen/.env.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname } from 'node:path';
+import { basename, dirname, extname } from 'node:path';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 
@@ -63,9 +63,25 @@ function decodeAndWrite({ b64, outputPath }) {
   writeFileSync(outputPath, Buffer.from(b64, 'base64'));
 }
 
+function guessMimeType(path) {
+  const ext = extname(path).toLowerCase();
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.webp':
+      return 'image/webp';
+    case '.gif':
+      return 'image/gif';
+    case '.png':
+    default:
+      return 'image/png';
+  }
+}
+
 function toBlob(path) {
   const bytes = readFileSync(path);
-  return new Blob([bytes], { type: 'image/png' });
+  return new Blob([bytes], { type: guessMimeType(path) });
 }
 
 export async function generate({ prompt, outputPath, dryRun, output, referenceImages }) {

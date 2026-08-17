@@ -27,8 +27,8 @@ Then:
 3. If you'll generate assets, add your `OPENAI_API_KEY` to
    `tools/asset-gen/.env` and test with a dry run:
    ```
-   node /home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/generate.mjs \
-     --manifest /home/runner/work/CrunchTime/CrunchTime/docs/ASSETS.md \
+   node tools/asset-gen/generate.mjs \
+     --manifest docs/ASSETS.md \
      --dry-run
    ```
    The default pipeline is manifest-driven batch generation (`docs/ASSETS.md`).

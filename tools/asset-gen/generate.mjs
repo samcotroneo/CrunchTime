@@ -16,6 +16,17 @@ const VALID_STATUSES = new Set(['needs-generation', 'placeholder', 'final']);
 const KEY_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 const NONE = 'none';
 
+function stripOptionalQuotes(value) {
+  const trimmed = `${value ?? ''}`.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 function loadDotEnv() {
   const envPath = new URL('./.env', import.meta.url);
   if (!existsSync(envPath)) return;
@@ -27,7 +38,7 @@ function loadDotEnv() {
     const idx = line.indexOf('=');
     if (idx <= 0) continue;
     const key = line.slice(0, idx).trim();
-    const value = line.slice(idx + 1).trim();
+    const value = stripOptionalQuotes(line.slice(idx + 1));
     if (!(key in process.env)) {
       process.env[key] = value;
     }
@@ -101,6 +112,11 @@ function normalizeBool(value, fallback = false) {
   if (['1', 'true', 'yes', 'y'].includes(v)) return true;
   if (['0', 'false', 'no', 'n'].includes(v)) return false;
   return fallback;
+}
+
+function parseMaxRetries(args) {
+  const maxRetries = Number.parseInt(args['max-retries'] || '', 10);
+  return Number.isNaN(maxRetries) ? DEFAULT_MAX_RETRIES : Math.max(0, maxRetries);
 }
 
 function normalizeAssetFromManifest(asset, manifestPath) {
@@ -199,6 +215,12 @@ function validateAsset(asset) {
   }
 
   if (!asset.output.format) errors.push('missing output_format');
+  if (asset.output.format) {
+    const pathExt = extname(asset.outputPath).slice(1).toLowerCase();
+    if (pathExt && pathExt !== asset.output.format) {
+      errors.push(`output_path extension (${pathExt}) does not match output_format (${asset.output.format})`);
+    }
+  }
   if (asset.output.width !== null && asset.output.width <= 0) errors.push('invalid output_width');
   if (asset.output.height !== null && asset.output.height <= 0) errors.push('invalid output_height');
 
@@ -291,17 +313,18 @@ function composePromptFromLayers(layers, correctionNotes = []) {
   ].join('\n');
 }
 
-function critiqueAttempt({ prompt, qualityErrors }) {
+function critiqueAttempt({ asset, qualityErrors }) {
   const findings = [];
   const correctionNotes = [];
+  const placeholderValues = new Set(['none', 'tbd', 'todo', 'n/a']);
 
-  if (!prompt.includes('Style:')) {
-    findings.push('Prompt missing style clause.');
-    correctionNotes.push('Include explicit style alignment language.');
+  if (placeholderValues.has(asset.brief.style.trim().toLowerCase())) {
+    findings.push('Style brief is placeholder-like and too weak for consistency.');
+    correctionNotes.push('Replace style with concrete visual style direction.');
   }
-  if (!prompt.includes('Negative constraints:')) {
-    findings.push('Prompt missing negative constraints.');
-    correctionNotes.push('Add strict "no watermark/no text" constraints.');
+  if (placeholderValues.has(asset.brief.negativeConstraints.trim().toLowerCase())) {
+    findings.push('Negative constraints are placeholder-like and too weak for safety.');
+    correctionNotes.push('Provide explicit negative constraints (watermark/text/logo exclusions).');
   }
 
   for (const err of qualityErrors) {
@@ -375,11 +398,6 @@ function validateOutput(asset, providerResult) {
     errors.push('output file is empty or invalid');
   }
 
-  const ext = extname(outputPath).slice(1).toLowerCase();
-  if (asset.output.format && ext && asset.output.format !== ext) {
-    errors.push(`output format mismatch expected ${asset.output.format} got ${ext}`);
-  }
-
   if (asset.output.format === 'png' && asset.output.width && asset.output.height) {
     const dims = readPngDimensions(outputPath);
     if (!dims) {
@@ -446,7 +464,7 @@ async function executeWithRetries({ provider, providerName, asset, dryRun, timeo
 
       const providerResult = normalizeProviderResult(rawResult, asset, providerName);
       const qualityErrors = providerResult.dryRun ? [] : validateOutput(asset, providerResult);
-      const critique = critiqueAttempt({ prompt, qualityErrors });
+      const critique = critiqueAttempt({ asset, qualityErrors });
 
       critiqueHistory.push({
         attempt: attemptNumber,
@@ -462,7 +480,7 @@ async function executeWithRetries({ provider, providerName, asset, dryRun, timeo
         continue;
       }
 
-      if (!critique.pass && attempt >= maxRetries) {
+      if (!critique.pass) {
         throw new Error(`quality checks failed after ${attemptNumber} attempts: ${critique.findings.join('; ')}`);
       }
 
@@ -644,8 +662,7 @@ async function runBatch(args) {
   const runId = args['run-id'] || crypto.randomUUID();
   const dryRun = Boolean(args['dry-run']);
   const timeoutMs = Number.parseInt(args['timeout-ms'] || '', 10) || DEFAULT_TIMEOUT_MS;
-  const maxRetries = Number.parseInt(args['max-retries'] || '', 10);
-  const boundedRetries = Number.isNaN(maxRetries) ? DEFAULT_MAX_RETRIES : Math.max(0, maxRetries);
+  const boundedRetries = parseMaxRetries(args);
 
   const results = [];
 
@@ -718,8 +735,7 @@ async function runDebugSingle(args) {
 
   const dryRun = Boolean(args['dry-run']);
   const timeoutMs = Number.parseInt(args['timeout-ms'] || '', 10) || DEFAULT_TIMEOUT_MS;
-  const maxRetries = Number.parseInt(args['max-retries'] || '', 10);
-  const boundedRetries = Number.isNaN(maxRetries) ? DEFAULT_MAX_RETRIES : Math.max(0, maxRetries);
+  const boundedRetries = parseMaxRetries(args);
 
   console.log(`[${asset.category}] generating "${asset.key}" via ${providerLoad.providerName}${dryRun ? ' (dry run)' : ''}`);
 
