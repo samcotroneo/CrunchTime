@@ -20,7 +20,7 @@ rework loops countable; always log one when Reviewer sends work back.
 ---
 
 ### 2026-08-17 — Lead — upstream sync migration guide
-**Did:** Added `/home/runner/work/CrunchTime/CrunchTime/docs/MIGRATIONS.md` with an agent-oriented upstream sync playbook for game repos created from GitHub template (remote setup, sync branch flow, first-sync unrelated-history fallback, and post-merge refresh commands). Linked the guide from `README.md`.
+**Did:** Added `docs/MIGRATIONS.md` with an agent-oriented upstream sync playbook for game repos created from GitHub template (remote setup, sync branch flow, first-sync unrelated-history fallback, and post-merge refresh commands). Linked the guide from `README.md`.
 **Why:** Teams need a repeatable, low-conflict way to pull scaffold updates into existing game repos.
 **Status:** ready-for-review
 **Review cycles:** 0

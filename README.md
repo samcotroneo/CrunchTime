@@ -37,7 +37,7 @@ Then:
 ### Updating a game repo from core scaffold changes
 
 If your game lives in its own repo and you want latest scaffold updates from
-this core repo, follow `/home/runner/work/CrunchTime/CrunchTime/docs/MIGRATIONS.md`
+this core repo, follow the guide in `docs/MIGRATIONS.md`.
 (`Upstream sync (for repos created from GitHub template)`).
 
 ### Keeping the mirrors in sync
