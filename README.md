@@ -34,6 +34,12 @@ Then:
    The default pipeline is manifest-driven batch generation (`docs/ASSETS.md`).
    Keep ad-hoc per-key generation for debugging only.
 
+### Updating a game repo from core scaffold changes
+
+If your game lives in its own repo and you want latest scaffold updates from
+this core repo, follow `/home/runner/work/CrunchTime/CrunchTime/docs/MIGRATIONS.md`
+(`Upstream sync (for repos created from GitHub template)`).
+
 ### Keeping the mirrors in sync
 
 `AGENTS.md` is canonical; `CLAUDE.md` and `.github/copilot-instructions.md`

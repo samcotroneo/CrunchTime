@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-17 — Lead — upstream sync migration guide
+**Did:** Added `/home/runner/work/CrunchTime/CrunchTime/docs/MIGRATIONS.md` with an agent-oriented upstream sync playbook for game repos created from GitHub template (remote setup, sync branch flow, first-sync unrelated-history fallback, and post-merge refresh commands). Linked the guide from `README.md`.
+**Why:** Teams need a repeatable, low-conflict way to pull scaffold updates into existing game repos.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Should we also add a `degit`/history-less migration track in the same doc, or keep this guide template-focused?
+
 ### 2026-08-17 — Build Engineer — robust asset-gen pipeline
 **Did:** Rebuilt `tools/asset-gen` around manifest-driven batch generation from `docs/ASSETS.md`, added a structured brief schema (`brief_*`) and output contract (`output_*`), deterministic layered prompt assembly, bounded retry/critique loop, provenance sidecars (`.meta.json`), validation + quality gates, partial-run continuation, `.env` auto-load, and updated provider contracts. Added reference image support end-to-end (`reference_images` schema, debug flag, OpenAI edits path with MIME detection). Updated `docs/ASSETS.md` and `README.md` with new workflow and migration guidance from legacy `generation` prompts.
 **Why:** Per-key ad-hoc prompting produced inconsistent results; the pipeline needed stronger structure, reproducibility, and robustness for production usage.
