@@ -27,11 +27,12 @@ Then:
 3. If you'll generate assets, add your `OPENAI_API_KEY` to
    `tools/asset-gen/.env` and test with a dry run:
    ```
-   cd tools/asset-gen
-   node generate.mjs --key player-idle --category art \
-     --prompt "16-bit pixel art idle frame" \
-     --out ../../assets/raw/player-idle.png --dry-run
+   node /home/runner/work/CrunchTime/CrunchTime/tools/asset-gen/generate.mjs \
+     --manifest /home/runner/work/CrunchTime/CrunchTime/docs/ASSETS.md \
+     --dry-run
    ```
+   The default pipeline is manifest-driven batch generation (`docs/ASSETS.md`).
+   Keep ad-hoc per-key generation for debugging only.
 
 ### Keeping the mirrors in sync
 
@@ -68,6 +69,14 @@ automatically — see `engines/README.md`.
 Copy `tools/asset-gen/providers/_template.mjs` to `providers/<name>.mjs`,
 implement `generate()`, set `AUDIO_PROVIDER=<name>` in `.env`. Nothing
 else needs to change.
+
+## Structured asset generation notes
+- `docs/ASSETS.md` now carries a structured brief per `needs-generation` asset
+  (`brief_*` fields) plus output contract fields (`output_*`).
+- Optional `reference_images` lets providers condition output on local image
+  references.
+- The generator writes provenance sidecars (`<asset>.meta.json`) for
+  reproducibility and audit trails.
 
 ## A note on Copilot's agent file format
 This scaffold uses `.github/chatmodes/*.chatmode.md`. Some Copilot
