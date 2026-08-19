@@ -6,14 +6,14 @@ defines versioning and the release checklist; history lives in
 
 ## Versioning
 
-- `0.x.y` — pre-release. `x` maps to GDD milestones: `0.1` prototype,
+- `0.x.y` — pre-release. `x` maps to SPEC milestones: `0.1` prototype,
   `0.2` vertical slice, `0.3` alpha, `0.4` beta. `y` for fixes within a
   milestone.
 - `1.0.0` — release. Patch/minor bumps from there per semver.
 
 ## Release checklist
 
-1. Milestone exit criteria in `docs/GDD.md` met (milestone status →
+1. Milestone exit criteria in `docs/SPEC.md` met (milestone status →
    `reached`).
 2. No `open` or `in-progress` blocker/major bugs in `docs/BUGS.md`.
 3. Assets rebuilt: `assets/build/` current with `docs/ASSETS.md`.

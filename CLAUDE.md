@@ -21,10 +21,10 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
   `engines/<engine>/conventions.md` — read the pack matching the engine
   marker in `docs/ARCHITECTURE.md`.
 - Asset keys always match the `key` field in `docs/ASSETS.md`. Never load a
-  raw file path directly in game code.
+  raw file path directly in product code.
 
 ## Docs every agent must read before acting
-- `docs/GDD.md` — what the game is and how it plays
+- `docs/SPEC.md` — the product spec: what it is and how it works
 - `docs/ARCHITECTURE.md` — how the codebase is organized
 - `docs/ASSETS.md` — asset manifest and generation status
 - `docs/SQUAD.md` — team roster and how agents coordinate

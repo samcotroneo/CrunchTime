@@ -10,7 +10,7 @@ Newest entries at the top.
 **Why:**
 **Status:** changes-requested | ready-for-review | reviewed | ready-for-qa | done
 **Review cycles:** 0 (times Reviewer sent this back; increments per changes-requested round)
-**Scope changed:** yes/no (did the work drift from the GDD/task as routed?)
+**Scope changed:** yes/no (did the work drift from the SPEC/task as routed?)
 **Open questions:** (for the next agent, or none)
 ```
 New fields are optional on older entries — the retro tool treats missing

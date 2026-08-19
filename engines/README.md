@@ -10,6 +10,7 @@ lives in a pack.
 engines/<name>/
   pack.json         { "name": "<name>", "label": "Human readable", "status": "ready|stub" }
   ARCHITECTURE.md   template stamped into docs/ARCHITECTURE.md by project init
+  SQUAD.md          template stamped into docs/SQUAD.md by project init (domain-specific role names)
   conventions.md    stack + coding conventions for this engine (linked from AGENTS.md)
 ```
 
@@ -17,6 +18,12 @@ engines/<name>/
 near the top so the init flow can detect which engine a project currently
 uses, and must keep the `## Scene flow` / `## State management` /
 `## Asset pipeline` headings (the init flow edits those sections in place).
+
+`SQUAD.md` templates restore the domain-specific role names and terminology
+appropriate for the engine (e.g. "Gameplay Engineer" and "Playtesting" for
+game engines; "App Engineer" and "User testing" for mobile app engines).
+The shared `docs/SQUAD.md` in a project is stamped from this template at
+init time — edit the template here to change defaults for new projects.
 
 ## Adding a new engine
 

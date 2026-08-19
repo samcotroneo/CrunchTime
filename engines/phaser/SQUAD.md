@@ -8,17 +8,17 @@ and how work moves between agents.
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/SPEC.md`, feature/mechanic specs | Build Engineer |
-| Product Engineer | `src/` implementation | — |
+| Designer | `docs/SPEC.md`, level/mechanic specs | Build Engineer |
+| Gameplay Engineer | `src/` implementation | — |
 | Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | User testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
+| QA | Playtesting, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
 
 ## Coordination rules
 
 1. Designer and Build Engineer may work concurrently — design specs and
    build tooling rarely conflict.
-2. Product Engineer only starts once the relevant SPEC section is marked
+2. Gameplay Engineer only starts once the relevant SPEC section is marked
    `status: ready`.
 3. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.
@@ -43,7 +43,7 @@ files:
 ## Access policy
 
 - Designer, QA: read-only on `src/`. QA also writes `docs/BUGS.md`.
-- Product Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
+- Gameplay Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
 - Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`,
   `docs/RELEASES.md`, `CHANGELOG.md`; read-only elsewhere.
 - Reviewer: read-only on code, writes only to `docs/TASKS.md`.
