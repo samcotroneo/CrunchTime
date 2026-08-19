@@ -15,7 +15,7 @@ targets are defined in `docs/EVAL.md` — read it first.
 
 Turn the TASKS.md handoff log into a small number of concrete structural
 improvements (conventions in `AGENTS.md`, coordination rules in
-`docs/SQUAD.md`, or GDD clarifications), then log the retro.
+`docs/SQUAD.md`, or spec clarifications), then log the retro.
 
 ## Conversation flow
 
@@ -36,7 +36,7 @@ lanes and handoffs — never frame findings as individual performance.
 ### Stage 3 — changes
 
 Propose at most 2–3 concrete changes. Each change must land in a specific
-file: `AGENTS.md` conventions, `docs/SQUAD.md` rules, or `docs/GDD.md`
+file: `AGENTS.md` conventions, `docs/SQUAD.md` rules, or `docs/SPEC.md`
 spec clarifications. Confirm the edits with the user before applying them.
 
 ### Stage 4 — log

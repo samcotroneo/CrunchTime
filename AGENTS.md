@@ -20,7 +20,7 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
   raw file path directly in product code.
 
 ## Docs every agent must read before acting
-- `docs/GDD.md` — the product spec: what it is and how it works
+- `docs/SPEC.md` — the product spec: what it is and how it works
 - `docs/ARCHITECTURE.md` — how the codebase is organized
 - `docs/ASSETS.md` — asset manifest and generation status
 - `docs/SQUAD.md` — team roster and how agents coordinate

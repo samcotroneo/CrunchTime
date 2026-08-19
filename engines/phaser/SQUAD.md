@@ -7,8 +7,8 @@ and how work moves between agents.
 
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
-| Lead | Routing, breaking GDD into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/GDD.md`, level/mechanic specs | Build Engineer |
+| Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
+| Designer | `docs/SPEC.md`, level/mechanic specs | Build Engineer |
 | Gameplay Engineer | `src/` implementation | — |
 | Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
@@ -18,7 +18,7 @@ and how work moves between agents.
 
 1. Designer and Build Engineer may work concurrently — design specs and
    build tooling rarely conflict.
-2. Gameplay Engineer only starts once the relevant GDD section is marked
+2. Gameplay Engineer only starts once the relevant SPEC section is marked
    `status: ready`.
 3. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.

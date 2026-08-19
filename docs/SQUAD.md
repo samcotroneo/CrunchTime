@@ -8,7 +8,7 @@ and how work moves between agents.
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/GDD.md`, feature/mechanic specs | Build Engineer |
+| Designer | `docs/SPEC.md`, feature/mechanic specs | Build Engineer |
 | Product Engineer | `src/` implementation | — |
 | Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
@@ -18,7 +18,7 @@ and how work moves between agents.
 
 1. Designer and Build Engineer may work concurrently — design specs and
    build tooling rarely conflict.
-2. Product Engineer only starts once the relevant GDD section is marked
+2. Product Engineer only starts once the relevant SPEC section is marked
    `status: ready`.
 3. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.

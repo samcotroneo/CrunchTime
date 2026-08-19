@@ -17,7 +17,7 @@ format carries the data.
 | Review cycles | `**Review cycles:**` field | Depth of rework per unit of work. |
 | Open-question aging | `**Open questions:**` ≠ none, days since entry date | Handoffs that leave the next agent stuck. |
 | Throughput | `done` entries per week | Delivery pace over time. |
-| Scope drift | `**Scope changed:**` yes ratio | How often routed tasks didn't match reality — a routing/GDD quality signal. |
+| Scope drift | `**Scope changed:**` yes ratio | How often routed tasks didn't match reality — a routing/SPEC quality signal. |
 | Release health | open blocker/major bugs in `docs/BUGS.md` | Gates releases — see `docs/RELEASES.md`. (Manual for now.) |
 
 ## Targets
@@ -31,7 +31,7 @@ real history.
 - Open questions: none older than one retro cycle without an answer or an
   explicit "deferred" note.
 - Scope drift: below ~20%. High drift means the Lead's task breakdown or the
-  GDD needs work, not the implementer.
+  SPEC needs work, not the implementer.
 
 ## Cadence
 
@@ -45,7 +45,7 @@ active development — whichever comes first.
 2. Compare each metric against targets. Investigate the worst offender
    first — read the actual TASKS.md entries behind the number.
 3. Decide on at most 2–3 concrete changes. Changes land in `AGENTS.md`
-   conventions, `docs/SQUAD.md` coordination rules, or the GDD — never in
+   conventions, `docs/SQUAD.md` coordination rules, or the SPEC — never in
    this file (this file only changes when the rubric itself is wrong).
 4. Log the retro as a TASKS.md entry: findings, decided changes, and which
    metric should move next cycle.

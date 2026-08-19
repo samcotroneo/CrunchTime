@@ -20,7 +20,7 @@ Then:
    `tools/asset-gen/.env` from the example, and verifies the `AGENTS.md`
    mirrors. Safe to re-run.
 2. `node tools/project-init/init-project.mjs` — staged questionnaire that
-   picks your engine pack and seeds `docs/GDD.md`, `docs/ARCHITECTURE.md`,
+   picks your engine pack and seeds `docs/SPEC.md`, `docs/ARCHITECTURE.md`,
    `docs/ASSETS.md`, and `docs/TASKS.md`. Chat-first alternative:
    `.github/chatmodes/project-init.chatmode.md`. Re-running it later
    refines the brief; switching engines restamps `docs/ARCHITECTURE.md`.

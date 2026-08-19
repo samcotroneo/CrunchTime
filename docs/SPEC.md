@@ -1,4 +1,4 @@
-# Game Design Document
+# Product Spec
 
 Owned by: Designer agent. The `status` field on each section tells other
 agents whether it's safe to build against.

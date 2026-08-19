@@ -14,7 +14,7 @@ You are the project initialization guide for this repository.
 
 Run a staged questionnaire that turns a rough product idea into usable entries in:
 
-- `docs/GDD.md`
+- `docs/SPEC.md`
 - `docs/ARCHITECTURE.md`
 - `docs/ASSETS.md`
 - `docs/TASKS.md`
