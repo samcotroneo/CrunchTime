@@ -1,8 +1,9 @@
-# Game Agent Team — Starter Scaffold
+# CrunchTime — Multi-Agent App Scaffold
 
-A markdown-driven multi-agent setup for building games with Claude Code
+A markdown-driven multi-agent setup for building apps with Claude Code
 and/or GitHub Copilot. Engine-agnostic at the core; per-engine conventions
-live in `engines/` (Phaser 3 included, Godot 4 stubbed).
+live in `engines/` (Phaser 3 and Godot 4 for games, React Native for mobile
+apps, and more).
 
 ## Setup
 
@@ -11,8 +12,8 @@ Requirements: Node.js ≥ 18. Nothing else.
 Get a copy:
 - **GitHub template:** click "Use this template" on the repo page.
   (Maintainer: enable it under Settings → Template repository.)
-- **Fresh copy without git history:** `npx degit <owner>/<repo> my-game && cd my-game`
-- **Plain clone:** `git clone <url> my-game && cd my-game`
+- **Fresh copy without git history:** `npx degit <owner>/<repo> my-app && cd my-app`
+- **Plain clone:** `git clone <url> my-app && cd my-app`
 
 Then:
 
@@ -34,9 +35,9 @@ Then:
    The default pipeline is manifest-driven batch generation (`docs/ASSETS.md`).
    Keep ad-hoc per-key generation for debugging only.
 
-### Updating a game repo from core scaffold changes
+### Updating a project repo from core scaffold changes
 
-If your game lives in its own repo and you want latest scaffold updates from
+If your project lives in its own repo and you want latest scaffold updates from
 this core repo, follow the guide in `docs/MIGRATIONS.md`.
 (`Upstream sync (for repos created from GitHub template)`).
 

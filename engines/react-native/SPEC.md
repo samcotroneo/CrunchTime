@@ -6,9 +6,9 @@ agents whether it's safe to build against.
 ## Overview
 - **Title:**
 - **Elevator pitch (one sentence):**
-- **Category:** (e.g. mobile app, web app, game, CLI tool)
+- **Category:** (e.g. productivity, social, utility, health)
 - **Core value proposition (one sentence):**
-- **Platform / input:**
+- **Platform / input:** (iOS, Android, or both; touch / gesture)
 - **Visual style:**
 - **Target audience:**
 - **Tone / mood:**
@@ -31,7 +31,7 @@ implement · `implemented` → shipped, changes need a new section.
 
 ## Screens / Content
 
-### [Screen or content name]
+### [Screen name]
 - **Status:** draft
 - **Goal:**
 - **Layout notes:**
