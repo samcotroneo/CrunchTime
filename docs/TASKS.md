@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-19 — Lead — lead orchestration efficiency tuning
+**Did:** Tightened `.github/chatmodes/take-the-lead.chatmode.md` to read the full required doc set (`docs/ARCHITECTURE.md` and `docs/ASSETS.md` included), default to one Lead session plus one worker, favor chatmode-first routing, keep worker tasks narrowly scoped, and avoid parallel agents unless lanes are truly independent. Updated `README.md` with lightweight usage guidance.
+**Why:** Multi-agent coordination can burn credits quickly; the Lead flow should bias toward milestone routing with minimal session fan-out.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
 ### 2026-08-19 — Lead — lead orchestration chatmode
 **Did:** Added `.github/chatmodes/take-the-lead.chatmode.md` so the Lead can read the core coordination docs, identify the active milestone, route work by squad lane/order, and propose `docs/TASKS.md` handoffs. Updated `README.md` to advertise the new flow and trigger phrases.
 **Why:** The scaffold had project-init and retro entrypoints but no equivalent guided Lead mode for day-to-day milestone orchestration.

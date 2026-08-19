@@ -63,7 +63,9 @@ findings into convention changes.
 Use `.github/chatmodes/take-the-lead.chatmode.md` when you want the Lead to
 assess the current milestone, route the squad by lane, and propose the next
 handoffs in `docs/TASKS.md`. Good trigger phrases include “take the lead” and
-“it’s crunch time”.
+“it’s crunch time”. For lower AI-credit usage, keep it chatmode-first: let
+Lead route the next one or two handoffs, reuse the docs as shared state, and
+avoid spawning extra worker sessions unless the work is truly independent.
 
 ## Bugs and releases
 QA files and verifies defects in `docs/BUGS.md` (severity + lifecycle

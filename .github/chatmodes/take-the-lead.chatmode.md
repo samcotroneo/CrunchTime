@@ -21,6 +21,8 @@ finding the next valid work, and routing the team in the order required by
 Read these files before proposing work:
 
 - `docs/SPEC.md`
+- `docs/ARCHITECTURE.md`
+- `docs/ASSETS.md`
 - `docs/SQUAD.md`
 - `docs/TASKS.md`
 - `docs/BUGS.md`
@@ -40,8 +42,17 @@ Read these files before proposing work:
 
 - Lead writes coordination and handoff output, not product code.
 - Respect access boundaries in `docs/SQUAD.md`.
+- Default to one Lead session plus one worker at a time. Do not spawn extra
+  agents unless the work is truly independent.
+- Prefer this chatmode over command wrappers or extra automation unless a
+  repeated workflow proves the extra surface is worth it.
+- Keep worker tasks narrowly scoped to one file area or one milestone slice.
+- Reuse the docs as persistent state instead of re-explaining the whole
+  project in every follow-up.
 - Designer and Build Engineer may run in parallel only when their work does
   not violate other coordination rules.
+- Prefer direct search/read/edit in the current session for small tasks rather
+  than delegating them to another agent.
 - Product Engineer only starts once the relevant SPEC section is marked
   `ready`.
 - Reviewer always gates QA.
@@ -88,6 +99,7 @@ Produce a short execution queue by lane:
 
 Only include work that follows the ordering and ownership rules in
 `docs/SQUAD.md`.
+Default to the next one worker-sized step, not a full parallel workstream.
 
 ### Stage 4 — propose handoffs
 
@@ -112,6 +124,8 @@ the handoff entry after the user confirms.
 - Keep recommendations concrete and milestone-oriented.
 - Keep the execution queue short; prefer the next valid step over a full
   roadmap.
+- Prefer at most the next one or two handoffs. Stop once the next valid work
+  is clear.
 - If no milestone is actionable, route the team toward the smallest unblocker.
 - When you append to `docs/TASKS.md`, use the standard format already defined
   there and log the work as Lead-owned coordination.
