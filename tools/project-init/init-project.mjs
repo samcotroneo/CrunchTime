@@ -162,9 +162,7 @@ function tryGetSection(content, startHeading, endHeading) {
 
 function parseSpec(content) {
   const specType = detectSpecType(content);
-  const outOfScope = (specType === 'game'
-    ? tryGetSection(content, '## Out of scope', SPEC_OUT_OF_SCOPE_END)
-    : tryGetSection(content, '## Out of scope', SPEC_OUT_OF_SCOPE_END))
+  const outOfScope = tryGetSection(content, '## Out of scope', SPEC_OUT_OF_SCOPE_END)
     .replace(/^List things explicitly \*not\* being built, so agents don\'t scope-creep\.\s*/m, '')
     .trim();
 
@@ -209,7 +207,7 @@ function parseSpec(content) {
           status: parseBulletValue(block.lines.join('\n'), 'Status'),
           goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
           layoutNotes: parseBulletValue(block.lines.join('\n'), 'Layout notes'),
-          newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
+          newItemsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
         }))
         .filter((level) => !isTemplateLevel(level.name)),
       milestones: parseNamedBlocks(milestonesSection)
@@ -268,7 +266,7 @@ function parseSpec(content) {
         status: parseBulletValue(block.lines.join('\n'), 'Status'),
         goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
         layoutNotes: parseBulletValue(block.lines.join('\n'), 'Layout notes'),
-        newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New features introduced'),
+        newItemsIntroduced: parseBulletValue(block.lines.join('\n'), 'New features introduced'),
       }))
       .filter((screen) => !isTemplateLevel(screen.name)),
     milestones: parseNamedBlocks(milestonesSection)
@@ -541,7 +539,7 @@ function buildLevelsSection(levels, specType) {
           `- **Status:** ${cleanValue(level.status, 'draft')}`,
           `- **Goal:** ${cleanValue(level.goal)}`,
           `- **Layout notes:** ${cleanValue(level.layoutNotes)}`,
-          `- **New mechanics introduced:** ${cleanOptional(level.newMechanicsIntroduced)}`,
+          `- **New mechanics introduced:** ${cleanOptional(level.newItemsIntroduced)}`,
         ].join('\n')
       )
       .join('\n\n');
@@ -565,7 +563,7 @@ function buildLevelsSection(levels, specType) {
         `- **Status:** ${cleanValue(screen.status, 'draft')}`,
         `- **Goal:** ${cleanValue(screen.goal)}`,
         `- **Layout notes:** ${cleanValue(screen.layoutNotes)}`,
-        `- **New features introduced:** ${cleanOptional(screen.newMechanicsIntroduced)}`,
+        `- **New features introduced:** ${cleanOptional(screen.newItemsIntroduced)}`,
       ].join('\n')
     )
     .join('\n\n');
@@ -742,14 +740,14 @@ async function collectInteractiveAnswers(existing, engines) {
           status: 'draft',
           goal: '',
           layoutNotes: '',
-          newMechanicsIntroduced: NONE,
+          newItemsIntroduced: NONE,
         }),
         () => [
           { key: 'name', label: 'Level name' },
           { key: 'status', label: 'Status', options: { fallback: 'draft' } },
           { key: 'goal', label: 'Goal' },
           { key: 'layoutNotes', label: 'Layout notes' },
-          { key: 'newMechanicsIntroduced', label: 'New mechanics introduced', options: { fallback: NONE } },
+          { key: 'newItemsIntroduced', label: 'New mechanics introduced', options: { fallback: NONE } },
         ]
       );
 
@@ -790,14 +788,14 @@ async function collectInteractiveAnswers(existing, engines) {
           status: 'draft',
           goal: '',
           layoutNotes: '',
-          newMechanicsIntroduced: NONE,
+          newItemsIntroduced: NONE,
         }),
         () => [
           { key: 'name', label: 'Screen name' },
           { key: 'status', label: 'Status', options: { fallback: 'draft' } },
           { key: 'goal', label: 'Goal' },
           { key: 'layoutNotes', label: 'Layout notes' },
-          { key: 'newMechanicsIntroduced', label: 'New features introduced', options: { fallback: NONE } },
+          { key: 'newItemsIntroduced', label: 'New features introduced', options: { fallback: NONE } },
         ]
       );
 
@@ -926,7 +924,7 @@ function normalizeAnswersFromFile(raw) {
       status: asString(entry.status, 'draft'),
       goal: asString(entry.goal),
       layoutNotes: asString(entry.layoutNotes),
-      newMechanicsIntroduced: asString(entry.newMechanicsIntroduced, NONE),
+      newItemsIntroduced: asString(entry.newItemsIntroduced, NONE),
     })),
     progression: {
       difficultyCurve: asString(progression.difficultyCurve),
