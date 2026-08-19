@@ -19,6 +19,22 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-19 — Lead — lead orchestration efficiency tuning
+**Did:** Tightened `.github/chatmodes/take-the-lead.chatmode.md` to read the full required doc set (`docs/ARCHITECTURE.md` and `docs/ASSETS.md` included), default to one Lead session plus one worker, favor chatmode-first routing, keep worker tasks narrowly scoped, and avoid parallel agents unless lanes are truly independent. Updated `README.md` with lightweight usage guidance.
+**Why:** Multi-agent coordination can burn credits quickly; the Lead flow should bias toward milestone routing with minimal session fan-out.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
+### 2026-08-19 — Lead — lead orchestration chatmode
+**Did:** Added `.github/chatmodes/take-the-lead.chatmode.md` so the Lead can read the core coordination docs, identify the active milestone, route work by squad lane/order, and propose `docs/TASKS.md` handoffs. Updated `README.md` to advertise the new flow and trigger phrases.
+**Why:** The scaffold had project-init and retro entrypoints but no equivalent guided Lead mode for day-to-day milestone orchestration.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Should a later pass add a local `node tools/lead/lead.mjs` wrapper, or is the chatmode enough?
+
 ### 2026-08-17 — Lead — upstream sync migration guide
 **Did:** Added `docs/MIGRATIONS.md` with an agent-oriented upstream sync playbook for game repos created from GitHub template (remote setup, sync branch flow, first-sync unrelated-history fallback, and post-merge refresh commands). Linked the guide from `README.md`.
 **Why:** Teams need a repeatable, low-conflict way to pull scaffold updates into existing game repos.
