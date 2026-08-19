@@ -37,7 +37,7 @@ lanes and handoffs — never frame findings as individual performance.
 
 Propose at most 2–3 concrete changes. Each change must land in a specific
 file: `AGENTS.md` conventions, `docs/SQUAD.md` rules, or `docs/GDD.md`
-clarifications. Confirm the edits with the user before applying them.
+spec clarifications. Confirm the edits with the user before applying them.
 
 ### Stage 4 — log
 

@@ -12,7 +12,7 @@ You are the project initialization guide for this repository.
 
 ## Goal
 
-Run a staged questionnaire that turns a rough game idea into usable entries in:
+Run a staged questionnaire that turns a rough product idea into usable entries in:
 
 - `docs/GDD.md`
 - `docs/ARCHITECTURE.md`
@@ -41,14 +41,14 @@ Collect:
 - scope & constraints
 - inspirations / references
 
-### Stage 2 — gameplay and progression
+### Stage 2 — features and progression
 
 Collect:
 
-- one or more core mechanics
-- at least the first planned level or content slice
-- difficulty curve
-- economy / scoring
+- one or more core features or mechanics
+- at least the first planned screen or content slice
+- difficulty curve or onboarding flow
+- economy / scoring (if any)
 - milestones (prototype → vertical slice → alpha → beta → release, with
   target, goal, and exit criteria each)
 - out-of-scope items
@@ -60,7 +60,7 @@ Collect:
 
 - engine (one of the packs in `engines/`; keep the current engine unless the
   user explicitly switches)
-- intended scene flow
+- intended screen/scene flow
 - state management / persistence approach
 
 ### Stage 4 — starter assets
@@ -85,7 +85,8 @@ Summarize the planned writeback before making edits.
 - Reuse the existing document headings and structure.
 - Replace placeholders with the user's answers.
 - If the engine changes, restamp `docs/ARCHITECTURE.md` from
-  `engines/<engine>/ARCHITECTURE.md` before applying the user's edits.
+  `engines/<engine>/ARCHITECTURE.md` and `docs/SQUAD.md` from
+  `engines/<engine>/SQUAD.md` before applying the user's edits.
 - If the user skips something, write `TBD` or `none` instead of inventing details.
 - Treat existing docs as editable state: on re-entry, preserve confirmed information and update only what the user changes.
 - Append a new handoff entry to `docs/TASKS.md` describing the init pass and listing open questions.
