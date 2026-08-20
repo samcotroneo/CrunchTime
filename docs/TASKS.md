@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-20 — Lead — model routing defaults
+**Did:** Added a project-level model routing policy for agent orchestration in `AGENTS.md` and surfaced the same defaults in `README.md`. Defaults now specify Lead work on `gpt-5.6-sol` (high reasoning), sub-agents on `gpt-5.6-luna`, escalation to `gpt-5.6-sol` (medium reasoning), Terra as non-default, and a fallback path to the spawning agent's settings when policy/runtime restrictions block preferences.
+**Why:** Keep agent quality predictable while minimizing model cost by making lightweight execution the default and defining clear escalation/fallback rules.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
 ### 2026-08-19 — Product Engineer — de-game-ify core scaffold
 
 **Did:** Removed game-specific terminology from all repo-level / core scaffold files so CrunchTime works equally well for mobile apps (and other non-game projects). Changes:

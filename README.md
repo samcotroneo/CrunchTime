@@ -68,6 +68,15 @@ handoffs in `docs/TASKS.md`. Good trigger phrases include “take the lead” an
 Lead route the next one or two handoffs, reuse the docs as shared state, and
 avoid spawning extra worker sessions unless the work is truly independent.
 
+### Default model policy (cost-oriented)
+- Lead/coordinator work: `gpt-5.6-sol` with high reasoning effort.
+- Sub-agent default: `gpt-5.6-luna`.
+- Escalation path for harder sub-tasks: `gpt-5.6-sol` with medium reasoning
+  effort.
+- `gpt-5.6-terra` is non-default and should only be used by explicit exception.
+- If runtime policy blocks preferred settings, fall back to the spawning
+  agent's current model/settings.
+
 ## Bugs and releases
 QA files and verifies defects in `docs/BUGS.md` (severity + lifecycle
 defined there). Releases follow `docs/RELEASES.md`: milestone-mapped

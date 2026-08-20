@@ -23,6 +23,20 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
 - Asset keys always match the `key` field in `docs/ASSETS.md`. Never load a
   raw file path directly in product code.
 
+## Agent model routing defaults
+- Lead/coordinator work defaults to `gpt-5.6-sol` with `reasoning_effort: high`.
+- Sub-agents default to `gpt-5.6-luna` for cost-efficient execution.
+- Escalate sub-agent tasks to `gpt-5.6-sol` with `reasoning_effort: medium`
+  when task complexity or quality risk is above lightweight scope.
+- `gpt-5.6-terra` is not a default model for this project.
+- Preference order for runtime routing:
+  1. task-level override
+  2. project defaults (this section)
+  3. spawning agent's current model/settings
+  4. platform default
+- If a policy/runtime restriction blocks a preferred model or effort level,
+  fall back to the spawning agent's current settings and continue.
+
 ## Docs every agent must read before acting
 - `docs/SPEC.md` — the product spec: what it is and how it works
 - `docs/ARCHITECTURE.md` — how the codebase is organized
