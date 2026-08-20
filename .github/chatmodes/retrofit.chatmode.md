@@ -13,10 +13,11 @@ onboarded into CrunchTime. Your job is to read the live codebase and populate
 the CrunchTime docs so that every future agent starts with accurate, up-to-date
 context rather than blank placeholders.
 
-This chatmode works for **any engine** — Capacitor, React Native, Phaser,
-Godot, or a custom stack. The investigation topics below focus on Capacitor
-because it is the most common retrofit scenario; adapt them to whichever
-engine is in use.
+This chatmode works for **any engine or language** — Capacitor, React Native,
+Phaser, Godot, a Python backend, a Rust CLI, a plain HTML site, or any other
+stack. It does not assume a particular directory layout, package manager, or
+runtime. All investigation starts from what is actually present in the
+repository.
 
 ## When to use this chatmode
 
@@ -26,68 +27,84 @@ The init pass seeds the doc structure; this pass fills it in from the source.
 
 ## Your mandate
 
-Read `src/`, `package.json`, `capacitor.config.*`, `ios/`, `android/`, and
-any CI config. Then update the CrunchTime docs to reflect what is actually
-there. **Do not invent details** — write `TBD` for anything you cannot
-determine from the code.
+Discover the project structure from first principles, then read whatever
+source, config, and CI files are present. Update the CrunchTime docs to
+reflect what is actually there. **Do not invent details** — write `TBD` for
+anything you cannot determine from the code.
 
 ---
 
 ## Step 1 — Archaeology: read the codebase
 
-Investigate each of the following and record your findings. Ask the user
-for clarification only when the code genuinely does not answer the question.
+### 1a — Discover the project layout
 
-### Web framework and build toolchain
-- What framework is in use? (React, Vue, Angular, vanilla?)
-- What bundler/dev server? (Vite, webpack, CRA?)
-- What TypeScript config is active? (`tsconfig.json` — `strict` mode?)
-- What major framework-specific libraries are installed? (React Router, Vue
-  Router, Pinia, etc.)
+Before asking any technology-specific questions, orient yourself:
 
-### Capacitor setup
-- Capacitor version (`package.json` → `@capacitor/core`)
-- `capacitor.config.*` — `appId`, `appName`, `webDir`, `server.androidScheme`
-- Are `ios/` and `android/` committed? Are they up to date with
-  `npx cap sync`?
-- Any deviation from standard Capacitor project layout?
+- List the top-level files and directories (e.g. `ls -a` or equivalent).
+- Identify the primary language(s) by file extension or toolchain markers
+  (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `build.gradle`,
+  `*.csproj`, `Makefile`, etc.).
+- Note the source root(s): it may be `src/`, `lib/`, `app/`, `Sources/`,
+  a root-level flat layout, a monorepo with multiple packages, or something
+  else entirely.
+- If no obvious source root exists, ask the user where application code lives
+  before proceeding.
 
-### Installed Capacitor plugins
-List all `@capacitor/*` and community Capacitor plugins from `package.json`.
-For each: name, version, whether it appears to be actively used in `src/`.
+Record these findings before investigating anything else. All subsequent
+questions should be adapted to what you find here.
 
-### Native features in use
-For each plugin, note which native capability it provides (camera, filesystem,
-push notifications, biometrics, secure storage, etc.).
+### 1b — Stack and build toolchain
 
-### Authentication
-- Is there an auth flow? What mechanism? (OAuth/OIDC, email+password, biometric?)
-- Which library handles it? (`@capacitor/google-auth`, Firebase Auth, custom?)
-- Where are tokens stored? (localStorage, `@capacitor/preferences`, secure enclave?)
+Answer only the questions that are relevant to the detected stack:
 
-### State management
-- What library or pattern manages global state? (Zustand, Redux, Pinia, React
-  Context, MobX, plain module singletons?)
-- Does state persist across sessions? How? (`@capacitor/preferences`, AsyncStorage,
-  IndexedDB, server-side session?)
+- **Primary language / runtime** — version if determinable.
+- **Framework** — e.g. React, Vue, Angular, SwiftUI, Jetpack Compose, Unity,
+  Godot, plain HTML, none.
+- **Build/bundle system** — e.g. Vite, webpack, Gradle, Xcode, Cargo, Make,
+  none.
+- **Package manager** — e.g. npm, yarn, pnpm, pip, Cargo, pub, none.
+- **TypeScript / type system** — if applicable, is strict mode on?
+- **Key dependencies** — list the 5–10 most significant runtime dependencies
+  from whatever dependency manifest exists.
 
-### Routing / navigation
-- What handles in-app routing? (React Router, Vue Router, Ionic navigation stack,
-  custom?)
-- Describe the screen/page hierarchy in two or three sentences.
+### 1c — Application structure
 
-### OTA update strategy
-- Is Capawesome Live Update, Ionic Appflow, or any other OTA mechanism configured?
-- If so, what is the update channel / strategy?
+- What are the main source directories and what do they contain?
+- How is the application entry point identified? (`main.*`, `index.*`,
+  `App.*`, `__main__`, etc.)
+- Is this a monorepo? If so, list the packages/workspaces.
+- Are there separate directories for platform-specific code (e.g. `ios/`,
+  `android/`, `macos/`, `linux/`)?
 
-### CI/CD
-- What CI system is in use? (GitHub Actions, Bitrise, Fastlane, none?)
-- Does CI build both iOS and Android? Does it deploy to TestFlight / Play Console?
+### 1d — Features and screens (engine-specific)
 
-### Known deviations from Capacitor defaults
+Adapt these questions to the project type:
+
+- **Mobile / desktop app**: What screens or views exist? How is navigation
+  handled?
+- **Game**: What scenes or levels exist? What is the game loop?
+- **Web app / site**: What pages or routes exist? What is the routing strategy?
+- **Backend / CLI / library**: What are the main modules, commands, or API
+  endpoints?
+- **Other**: Describe the top-level units of functionality.
+
+### 1e — Authentication and data persistence (if applicable)
+
+- Is there an authentication flow? What mechanism and which library?
+- How is state or user data persisted? (local files, database, cloud, browser
+  storage, preferences API, etc.)
+
+### 1f — CI/CD (if present)
+
+- What CI system is configured? (GitHub Actions, GitLab CI, Bitrise, Fastlane,
+  Makefile targets, none?)
+- What does the pipeline do? (lint, test, build, deploy?)
+
+### 1g — Known deviations or surprises
+
 Note anything that will surprise an agent unfamiliar with this project:
-unusual directory layout, forked plugins, monkey-patched WebView behaviour,
-non-standard build scripts, etc.
+unusual directory layout, non-standard build steps, forked dependencies,
+platform-specific quirks, etc.
 
 ---
 
@@ -96,17 +113,20 @@ non-standard build scripts, etc.
 Update the following sections. **Do not delete content that is already
 accurate.** Replace placeholders and `TBD` values with what you found.
 
-- `## Stack` — actual versions of Capacitor, web framework, TypeScript,
-  bundler, package manager.
+- `## Stack` — actual language(s), runtime versions, framework, build toolchain,
+  and package manager found in Step 1.
 - `## Folder structure` — correct the template to match the actual layout.
-  Note any directories that differ from the pack default.
-- `## App / screen flow` — describe the screen/page navigation flow as it
-  exists today (Splash → Onboarding → Home → …). Mark screens that are
-  **in-progress** or **planned but not yet built**.
-- `## State management` — describe how state is managed and persisted.
+  If the project has no `src/` directory, document whatever source root(s)
+  exist and explain the layout.
+- `## App / screen flow` — describe the top-level units of functionality and
+  how a user or caller moves between them (screens, pages, scenes, commands,
+  API routes, etc.). Mark anything **in-progress** or **planned but not yet built**.
+- `## State management` — describe how state or data is managed and persisted.
+  Write `N/A` if the project type has no meaningful state (e.g. a static site
+  or a pure library).
 - `## Engine notes` — write a structured summary of everything found in
-  Step 1. Use one heading per topic (Web framework, Capacitor setup,
-  Plugins, Auth, OTA, CI/CD, Deviations).
+  Step 1. Use one sub-heading per investigation topic from Step 1 and omit
+  topics that do not apply to this project.
 
 ---
 
@@ -127,8 +147,11 @@ Add any features or screens that exist in the codebase but are missing from
 
 ## Step 4 — Populate `docs/ASSETS.md`
 
-List existing assets in `src/assets/`, `public/`, or wherever they live in
-this project. For each asset add an entry with:
+List existing non-code assets in whatever directories they occupy in this
+project (`src/assets/`, `public/`, `assets/`, `Resources/`, `res/`, or any
+other location found in Step 1a). If the project has no static assets (e.g.
+a CLI tool or a pure library), write a short note to that effect and skip
+the table. For each asset that does exist, add an entry with:
 
 - `key` — a short camelCase identifier (e.g. `appIcon`, `onboardingIllustration`)
 - `category` — `image`, `audio`, `font`, `video`, `data`, etc.
