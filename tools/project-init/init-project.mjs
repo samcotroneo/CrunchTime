@@ -315,9 +315,13 @@ function listEngines(enginesRoot) {
     .map((entry) => {
       try {
         const pack = JSON.parse(readText(join(enginesRoot, entry.name, 'pack.json')));
-        return { name: entry.name, label: asString(pack.label, entry.name) };
+        return {
+          name: entry.name,
+          label: asString(pack.label, entry.name),
+          engineExpertQuestions: Array.isArray(pack.engineExpertQuestions) ? pack.engineExpertQuestions : [],
+        };
       } catch {
-        return { name: entry.name, label: entry.name };
+        return { name: entry.name, label: entry.name, engineExpertQuestions: [] };
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -330,10 +334,12 @@ function resolveEngine(engineName, engines, enginesRoot) {
     throw new Error(`Unknown engine "${name}". Available packs in engines/: ${available}`);
   }
   const specCandidate = join(enginesRoot, name, 'SPEC.md');
+  const engineEntry = engines.find((e) => e.name === name);
   return {
     name,
     templatePath: join(enginesRoot, name, 'ARCHITECTURE.md'),
     specTemplatePath: existsSync(specCandidate) ? specCandidate : null,
+    engineExpertQuestions: engineEntry?.engineExpertQuestions ?? [],
   };
 }
 
@@ -640,6 +646,16 @@ function buildAssetsSection(assets) {
     .join('\n\n');
 }
 
+function buildEngineNotesSection(engineExpert) {
+  if (!engineExpert || Object.keys(engineExpert).length === 0) {
+    return '_No engine-specific notes recorded. Re-run project init or ask the Engine Expert agent to populate this section._';
+  }
+
+  return Object.entries(engineExpert)
+    .map(([key, value]) => `- **${key}:** ${cleanValue(value)}`)
+    .join('\n');
+}
+
 function appendTaskEntry(content, answers, agentName) {
   const entry = [
     `### ${getTodayDateString()} — ${cleanValue(agentName, 'Project Init')} — project init`,
@@ -677,6 +693,12 @@ function printSummary(answers) {
   console.log(`- Milestones: ${summarizeList(answers.milestones, (item) => cleanValue(item.name, 'TBD milestone'))}`);
   console.log(`- Assets: ${summarizeList(answers.assets, (item) => cleanValue(item.key, 'tbd-asset'))}`);
   console.log(`- Open questions: ${collectOpenQuestionsSummary(answers)}`);
+  if (answers.engineExpert && Object.keys(answers.engineExpert).length > 0) {
+    console.log('- Engine expert answers:');
+    for (const [key, value] of Object.entries(answers.engineExpert)) {
+      console.log(`  - ${key}: ${cleanValue(value)}`);
+    }
+  }
 }
 
 async function collectInteractiveAnswers(existing, engines) {
@@ -863,6 +885,23 @@ async function collectInteractiveAnswers(existing, engines) {
       ]
     );
 
+    // Stage 5 — engine-specific details (Engine Expert questions from pack.json)
+    const resolvedEngineName = `${engine ?? ''}`.trim().toLowerCase() || DEFAULT_ENGINE;
+    const engineEntry = engines.find((e) => e.name === resolvedEngineName);
+    const expertQuestions = engineEntry?.engineExpertQuestions ?? [];
+    const engineExpert = {};
+
+    if (expertQuestions.length > 0) {
+      console.log('\nStage 5 — engine-specific details');
+      console.log(`(${engineEntry.label} — ${expertQuestions.length} question${expertQuestions.length === 1 ? '' : 's'})`);
+      for (const question of expertQuestions) {
+        if (question.hint) {
+          console.log(`  Hint: ${question.hint}`);
+        }
+        engineExpert[question.key] = await ask(rl, question.label, '', { fallback: UNANSWERED });
+      }
+    }
+
     const answers = {
       overview,
       mechanics,
@@ -874,9 +913,10 @@ async function collectInteractiveAnswers(existing, engines) {
       engine,
       architecture,
       assets,
+      engineExpert,
     };
 
-    console.log('\nStage 5 — confirmation');
+    console.log(`\nStage ${expertQuestions.length > 0 ? 6 : 5} — confirmation`);
     printSummary(answers);
     const confirm = (await rl.question('\nWrite these answers into the docs? [y/N]: ')).trim().toLowerCase();
     if (!['y', 'yes'].includes(confirm)) {
@@ -952,6 +992,7 @@ function normalizeAnswersFromFile(raw) {
       source: asString(entry.source),
       generation: asString(entry.generation, NONE),
     })),
+    engineExpert: asRecord(data.engineExpert),
   };
 }
 
@@ -1066,6 +1107,16 @@ async function main() {
       '## State management',
       '## Asset pipeline',
       buildArchitectureSection(answers.architecture.stateManagement)
+    );
+  }
+
+  // Write engine expert answers into ## Engine notes if that section is present
+  if (updatedArchitecture.includes('## Engine notes')) {
+    updatedArchitecture = replaceSection(
+      updatedArchitecture,
+      '## Engine notes',
+      null,
+      buildEngineNotesSection(answers.engineExpert)
     );
   }
 

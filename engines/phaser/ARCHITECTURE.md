@@ -33,3 +33,8 @@ store, save file) once decided.
 2. Build Engineer packs them into `assets/build/` (atlases, audio sprites)
 3. Game code loads only by key, defined in `docs/ASSETS.md` — never a raw
    path
+
+## Engine notes
+Engine Expert findings go here after the project init Engine Expert stage
+runs. Includes platform-specific scale/audio recommendations, physics backend
+choice rationale, and any project-specific Phaser configuration notes.

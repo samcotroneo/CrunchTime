@@ -38,3 +38,8 @@ server-side session) once decided.
 2. Build Engineer optimizes them into `assets/build/`
 3. App code loads only by key, defined in `docs/ASSETS.md` — never a raw
    path
+
+## Engine notes
+Engine Expert findings go here after the project init Engine Expert stage
+runs. Includes Expo workflow choice rationale, navigation library notes,
+platform-specific configuration, and any project-specific React Native notes.
