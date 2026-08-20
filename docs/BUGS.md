@@ -1,13 +1,13 @@
 # Bug Tracker
 
-Owned by: QA (files, triages, verifies). Gameplay Engineer fixes and moves
+Owned by: QA (files, triages, verifies). Product Engineer fixes and moves
 status forward. This file is the single source of truth for known defects —
 coordination happens here, not in chat.
 
 ## Severity scheme
 
-- `blocker` — crash, save corruption, progression impossible
-- `major` — broken mechanic, wrong balance behavior, milestone exit
+- `blocker` — crash, data loss, progression impossible
+- `major` — broken feature, wrong behavior, milestone exit
   criteria at risk
 - `minor` — visual/audio glitch, polish, typo
 
@@ -16,7 +16,7 @@ coordination happens here, not in chat.
 `open` → `in-progress` → `fixed` → `verified`
 
 - QA files bugs as `open` and owns final verification (`verified`).
-- Gameplay Engineer claims `open` bugs (sets Owner, moves to
+- Product Engineer claims `open` bugs (sets Owner, moves to
   `in-progress`) and marks `fixed` when the fix lands.
 - Only QA moves a bug to `verified`. A failed verification goes back to
   `open` with a note.

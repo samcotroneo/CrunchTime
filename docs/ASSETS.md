@@ -37,37 +37,37 @@ generation:                        old freeform prompt (kept for backward compat
 
 ## Assets
 
-### player-idle
+### app-icon
 - category: art
-- type: spritesheet (4 frames, 32x32)
+- type: atlas
 - status: needs-generation
 - source: generated
-- brief_subject: player idle sprite for a top-down food-courier game
-- brief_style: 16-bit pixel art with crisp readable silhouette
-- brief_camera: orthographic top-down character framing
-- brief_palette: warm food-court colors with medium contrast
-- brief_mood: energetic and playful
-- brief_constraints: transparent background, centered sprite, no text
-- brief_negative_constraints: no watermark, no logos, no UI
-- brief_output_spec: single frame concept reference for later spritesheet expansion
-- output_path: ../assets/raw/player-idle.png
+- brief_subject: app icon for a productivity mobile app
+- brief_style: clean flat design with bold colors
+- brief_camera: flat front-facing icon framing
+- brief_palette: bold primary colors with white background
+- brief_mood: friendly and professional
+- brief_constraints: transparent background, centered composition, no text
+- brief_negative_constraints: no watermark, no logos, no UI chrome
+- brief_output_spec: single icon image
+- output_path: ../assets/raw/app-icon.png
 - output_format: png
 - output_width: 1024
 - output_height: 1024
 - output_transparent_background: true
 - reference_images: none
-- generation: "16-bit pixel art character, idle animation frame, transparent background"
+- generation: "flat design app icon, bold colors, transparent background"
 
 ### bg-music-main
 - category: audio
 - type: music
 - status: needs-generation
 - source: generated
-- brief_subject: main gameplay loop music for arcade time-management gameplay
-- brief_style: upbeat chiptune-inspired game soundtrack
+- brief_subject: background music for a focused work / productivity session
+- brief_style: ambient instrumental with a calm, steady groove
 - brief_camera: none
-- brief_palette: bright tonal palette with clean lead
-- brief_mood: focused but cheerful
+- brief_palette: soft tonal palette with clean lead
+- brief_mood: focused and calm
 - brief_constraints: seamless loop, no vocals
 - brief_negative_constraints: no abrupt intro/outro, no clipping
 - brief_output_spec: 45-60 seconds loop-ready bed

@@ -8,9 +8,9 @@ import readline from 'node:readline/promises';
 
 const UNANSWERED = 'TBD';
 const NONE = 'none';
-const GDD_OUT_OF_SCOPE_END = '<!-- project-init:end:out-of-scope -->';
+const SPEC_OUT_OF_SCOPE_END = '<!-- project-init:end:out-of-scope -->';
 const ASSET_SECTION_END = '---\nAdd new entries above this line.';
-const GDD_PLACEHOLDERS = new Set([
+const SPEC_PLACEHOLDERS = new Set([
   '(deadline, team size, must-reuse assets, etc.)',
   '(optional)',
 ]);
@@ -142,51 +142,133 @@ function isTemplateMilestone(title) {
 function isTemplateAsset(asset) {
   return (
     asset.key === 'player-idle' ||
+    asset.key === 'app-icon' ||
     asset.key === 'bg-music-main'
   );
 }
 
-function parseGdd(content) {
-  const mechanicsSection = getSection(content, '## Mechanics', '## Levels / Content');
-  const levelsSection = getSection(content, '## Levels / Content', '## Progression & balancing');
-  const milestonesSection = getSection(content, '## Milestones', '## Out of scope');
-  const outOfScope = getSection(content, '## Out of scope', GDD_OUT_OF_SCOPE_END)
+function detectSpecType(content) {
+  return content.includes('## Mechanics') ? 'game' : 'generic';
+}
+
+function tryGetSection(content, startHeading, endHeading) {
+  const start = content.indexOf(startHeading);
+  if (start === -1) return '';
+  const sectionStart = start + startHeading.length;
+  const end = endHeading ? content.indexOf(endHeading, sectionStart) : content.length;
+  if (endHeading && end === -1) return '';
+  return content.slice(sectionStart, end).trim();
+}
+
+function parseSpec(content) {
+  const specType = detectSpecType(content);
+  const outOfScope = tryGetSection(content, '## Out of scope', SPEC_OUT_OF_SCOPE_END)
     .replace(/^List things explicitly \*not\* being built, so agents don\'t scope-creep\.\s*/m, '')
     .trim();
 
+  const milestonesSection = tryGetSection(content, '## Milestones', '## Out of scope');
+
+  if (specType === 'game') {
+    const mechanicsSection = tryGetSection(content, '## Mechanics', '## Levels / Content');
+    const levelsSection = tryGetSection(content, '## Levels / Content', '## Progression & balancing');
+
+    return {
+      specType,
+      overview: {
+        title: parseBulletValue(content, 'Title'),
+        elevatorPitch: parseBulletValue(content, 'Elevator pitch (one sentence)'),
+        category: parseBulletValue(content, 'Genre'),
+        coreValueProp: parseBulletValue(content, 'Core loop (one sentence)'),
+        platformInput: parseBulletValue(content, 'Platform / input'),
+        visualStyle: parseBulletValue(content, 'Visual style'),
+        targetAudience: parseBulletValue(content, 'Target audience'),
+        toneMood: parseBulletValue(content, 'Tone / mood'),
+        targetSessionLength: parseBulletValue(content, 'Target session length'),
+        scopeConstraints: stripTemplateValue(parseBulletValue(content, 'Scope & constraints'), SPEC_PLACEHOLDERS),
+        inspirations: stripTemplateValue(
+          parseBulletValue(content, 'Inspirations / reference games') ||
+          parseBulletValue(content, 'Inspirations / references'),
+          SPEC_PLACEHOLDERS
+        ),
+      },
+      mechanics: parseNamedBlocks(mechanicsSection)
+        .map((block) => ({
+          name: block.title,
+          status: parseBulletValue(block.lines.join('\n'), 'Status'),
+          description: parseBulletValue(block.lines.join('\n'), 'Description'),
+          playerInput: parseBulletValue(block.lines.join('\n'), 'Player input'),
+          winFailCondition: parseBulletValue(block.lines.join('\n'), 'Win/fail condition'),
+          openQuestions: parseBulletValue(block.lines.join('\n'), 'Open questions'),
+        }))
+        .filter((mechanic) => !isTemplateMechanic(mechanic.name)),
+      levels: parseNamedBlocks(levelsSection)
+        .map((block) => ({
+          name: block.title.replace(/^Level \d+ — /, ''),
+          status: parseBulletValue(block.lines.join('\n'), 'Status'),
+          goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
+          layoutNotes: parseBulletValue(block.lines.join('\n'), 'Layout notes'),
+          newItemsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
+        }))
+        .filter((level) => !isTemplateLevel(level.name)),
+      milestones: parseNamedBlocks(milestonesSection)
+        .map((block) => ({
+          name: block.title,
+          target: parseBulletValue(block.lines.join('\n'), 'Target'),
+          goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
+          exitCriteria: parseBulletValue(block.lines.join('\n'), 'Exit criteria'),
+          status: parseBulletValue(block.lines.join('\n'), 'Status'),
+        }))
+        .filter((milestone) => !isTemplateMilestone(milestone.name)),
+      progression: {
+        difficultyCurve: parseBulletValue(content, 'Difficulty curve'),
+        economyScoring: parseBulletValue(content, 'Economy / scoring (if any)'),
+      },
+      outOfScope,
+    };
+  }
+
+  // generic spec type
+  const featuresSection = tryGetSection(content, '## Features', '## Screens / Content');
+  const screensSection = tryGetSection(content, '## Screens / Content', '## Progression & polish');
+
   return {
+    specType,
     overview: {
       title: parseBulletValue(content, 'Title'),
       elevatorPitch: parseBulletValue(content, 'Elevator pitch (one sentence)'),
-      genre: parseBulletValue(content, 'Genre'),
-      coreLoop: parseBulletValue(content, 'Core loop (one sentence)'),
+      category: parseBulletValue(content, 'Category') || parseBulletValue(content, 'Genre'),
+      coreValueProp: parseBulletValue(content, 'Core value proposition (one sentence)') || parseBulletValue(content, 'Core loop (one sentence)'),
       platformInput: parseBulletValue(content, 'Platform / input'),
       visualStyle: parseBulletValue(content, 'Visual style'),
       targetAudience: parseBulletValue(content, 'Target audience'),
       toneMood: parseBulletValue(content, 'Tone / mood'),
       targetSessionLength: parseBulletValue(content, 'Target session length'),
-      scopeConstraints: stripTemplateValue(parseBulletValue(content, 'Scope & constraints'), GDD_PLACEHOLDERS),
-      inspirations: stripTemplateValue(parseBulletValue(content, 'Inspirations / reference games'), GDD_PLACEHOLDERS),
+      scopeConstraints: stripTemplateValue(parseBulletValue(content, 'Scope & constraints'), SPEC_PLACEHOLDERS),
+      inspirations: stripTemplateValue(
+        parseBulletValue(content, 'Inspirations / references') ||
+        parseBulletValue(content, 'Inspirations / reference games'),
+        SPEC_PLACEHOLDERS
+      ),
     },
-    mechanics: parseNamedBlocks(mechanicsSection)
+    mechanics: parseNamedBlocks(featuresSection)
       .map((block) => ({
         name: block.title,
         status: parseBulletValue(block.lines.join('\n'), 'Status'),
         description: parseBulletValue(block.lines.join('\n'), 'Description'),
-        playerInput: parseBulletValue(block.lines.join('\n'), 'Player input'),
-        winFailCondition: parseBulletValue(block.lines.join('\n'), 'Win/fail condition'),
+        playerInput: parseBulletValue(block.lines.join('\n'), 'User interaction'),
+        winFailCondition: parseBulletValue(block.lines.join('\n'), 'Success / failure state'),
         openQuestions: parseBulletValue(block.lines.join('\n'), 'Open questions'),
       }))
-      .filter((mechanic) => !isTemplateMechanic(mechanic.name)),
-    levels: parseNamedBlocks(levelsSection)
+      .filter((feature) => !isTemplateMechanic(feature.name)),
+    levels: parseNamedBlocks(screensSection)
       .map((block) => ({
-        name: block.title.replace(/^Level \d+ — /, ''),
+        name: block.title,
         status: parseBulletValue(block.lines.join('\n'), 'Status'),
         goal: parseBulletValue(block.lines.join('\n'), 'Goal'),
         layoutNotes: parseBulletValue(block.lines.join('\n'), 'Layout notes'),
-        newMechanicsIntroduced: parseBulletValue(block.lines.join('\n'), 'New mechanics introduced'),
+        newItemsIntroduced: parseBulletValue(block.lines.join('\n'), 'New features introduced'),
       }))
-      .filter((level) => !isTemplateLevel(level.name)),
+      .filter((screen) => !isTemplateLevel(screen.name)),
     milestones: parseNamedBlocks(milestonesSection)
       .map((block) => ({
         name: block.title,
@@ -197,7 +279,7 @@ function parseGdd(content) {
       }))
       .filter((milestone) => !isTemplateMilestone(milestone.name)),
     progression: {
-      difficultyCurve: parseBulletValue(content, 'Difficulty curve'),
+      difficultyCurve: parseBulletValue(content, 'User flow / onboarding'),
       economyScoring: parseBulletValue(content, 'Economy / scoring (if any)'),
     },
     outOfScope,
@@ -208,10 +290,10 @@ function parseArchitecture(content) {
   return {
     engine: detectEngine(content),
     sceneFlow: stripArchitecturePlaceholder(
-      getSection(content, '## Scene flow', '## State management').trim()
+      tryGetSection(content, '## Scene flow', '## State management').trim()
     ),
     stateManagement: stripArchitecturePlaceholder(
-      getSection(content, '## State management', '## Asset pipeline').trim()
+      tryGetSection(content, '## State management', '## Asset pipeline').trim()
     ),
   };
 }
@@ -247,7 +329,12 @@ function resolveEngine(engineName, engines, enginesRoot) {
     const available = engines.map((engine) => engine.name).join(', ') || 'none';
     throw new Error(`Unknown engine "${name}". Available packs in engines/: ${available}`);
   }
-  return { name, templatePath: join(enginesRoot, name, 'ARCHITECTURE.md') };
+  const specCandidate = join(enginesRoot, name, 'SPEC.md');
+  return {
+    name,
+    templatePath: join(enginesRoot, name, 'ARCHITECTURE.md'),
+    specTemplatePath: existsSync(specCandidate) ? specCandidate : null,
+  };
 }
 
 function parseAssets(content) {
@@ -348,75 +435,150 @@ function collectOpenQuestionsSummary(answers) {
   return openQuestions.length ? openQuestions.join('; ') : NONE;
 }
 
-function buildGddOverview(overview) {
+function buildSpecOverview(overview, specType) {
+  if (specType === 'game') {
+    return [
+      '- **Title:** ' + cleanValue(overview.title),
+      '- **Elevator pitch (one sentence):** ' + cleanValue(overview.elevatorPitch),
+      '- **Genre:** ' + cleanValue(overview.category),
+      '- **Core loop (one sentence):** ' + cleanValue(overview.coreValueProp),
+      '- **Platform / input:** ' + cleanValue(overview.platformInput),
+      '- **Visual style:** ' + cleanValue(overview.visualStyle),
+      '- **Target audience:** ' + cleanValue(overview.targetAudience),
+      '- **Tone / mood:** ' + cleanValue(overview.toneMood),
+      '- **Target session length:** ' + cleanValue(overview.targetSessionLength),
+      '- **Scope & constraints:** ' + cleanValue(overview.scopeConstraints),
+      '- **Inspirations / reference games:** ' + cleanOptional(overview.inspirations),
+    ].join('\n');
+  }
+
   return [
     '- **Title:** ' + cleanValue(overview.title),
     '- **Elevator pitch (one sentence):** ' + cleanValue(overview.elevatorPitch),
-    '- **Genre:** ' + cleanValue(overview.genre),
-    '- **Core loop (one sentence):** ' + cleanValue(overview.coreLoop),
+    '- **Category:** ' + cleanValue(overview.category),
+    '- **Core value proposition (one sentence):** ' + cleanValue(overview.coreValueProp),
     '- **Platform / input:** ' + cleanValue(overview.platformInput),
     '- **Visual style:** ' + cleanValue(overview.visualStyle),
     '- **Target audience:** ' + cleanValue(overview.targetAudience),
     '- **Tone / mood:** ' + cleanValue(overview.toneMood),
     '- **Target session length:** ' + cleanValue(overview.targetSessionLength),
     '- **Scope & constraints:** ' + cleanValue(overview.scopeConstraints),
-    '- **Inspirations / reference games:** ' + cleanOptional(overview.inspirations),
+    '- **Inspirations / references:** ' + cleanOptional(overview.inspirations),
   ].join('\n');
 }
 
-function buildMechanicsSection(mechanics) {
+function buildMechanicsSection(mechanics, specType) {
+  if (specType === 'game') {
+    if (!mechanics.length) {
+      return [
+        '### TBD mechanic',
+        '- **Status:** draft',
+        '- **Description:** TBD',
+        '- **Player input:** TBD',
+        '- **Win/fail condition:** TBD',
+        '- **Open questions:** none',
+      ].join('\n');
+    }
+
+    return mechanics
+      .map((mechanic) =>
+        [
+          `### ${cleanValue(mechanic.name, 'TBD mechanic')}`,
+          `- **Status:** ${cleanValue(mechanic.status, 'draft')}`,
+          `- **Description:** ${cleanValue(mechanic.description)}`,
+          `- **Player input:** ${cleanValue(mechanic.playerInput)}`,
+          `- **Win/fail condition:** ${cleanValue(mechanic.winFailCondition)}`,
+          `- **Open questions:** ${cleanOptional(mechanic.openQuestions)}`,
+        ].join('\n')
+      )
+      .join('\n\n');
+  }
+
+  // generic (features)
   if (!mechanics.length) {
     return [
-      '### TBD mechanic',
+      '### TBD feature',
       '- **Status:** draft',
       '- **Description:** TBD',
-      '- **Player input:** TBD',
-      '- **Win/fail condition:** TBD',
+      '- **User interaction:** TBD',
+      '- **Success / failure state:** TBD',
       '- **Open questions:** none',
     ].join('\n');
   }
 
   return mechanics
-    .map((mechanic) =>
+    .map((feature) =>
       [
-        `### ${cleanValue(mechanic.name, 'TBD mechanic')}`,
-        `- **Status:** ${cleanValue(mechanic.status, 'draft')}`,
-        `- **Description:** ${cleanValue(mechanic.description)}`,
-        `- **Player input:** ${cleanValue(mechanic.playerInput)}`,
-        `- **Win/fail condition:** ${cleanValue(mechanic.winFailCondition)}`,
-        `- **Open questions:** ${cleanOptional(mechanic.openQuestions)}`,
+        `### ${cleanValue(feature.name, 'TBD feature')}`,
+        `- **Status:** ${cleanValue(feature.status, 'draft')}`,
+        `- **Description:** ${cleanValue(feature.description)}`,
+        `- **User interaction:** ${cleanValue(feature.playerInput)}`,
+        `- **Success / failure state:** ${cleanValue(feature.winFailCondition)}`,
+        `- **Open questions:** ${cleanOptional(feature.openQuestions)}`,
       ].join('\n')
     )
     .join('\n\n');
 }
 
-function buildLevelsSection(levels) {
+function buildLevelsSection(levels, specType) {
+  if (specType === 'game') {
+    if (!levels.length) {
+      return [
+        '### Level 1 — TBD',
+        '- **Status:** draft',
+        '- **Goal:** TBD',
+        '- **Layout notes:** TBD',
+        '- **New mechanics introduced:** none',
+      ].join('\n');
+    }
+
+    return levels
+      .map((level, index) =>
+        [
+          `### Level ${index + 1} — ${cleanValue(level.name, 'TBD')}`,
+          `- **Status:** ${cleanValue(level.status, 'draft')}`,
+          `- **Goal:** ${cleanValue(level.goal)}`,
+          `- **Layout notes:** ${cleanValue(level.layoutNotes)}`,
+          `- **New mechanics introduced:** ${cleanOptional(level.newItemsIntroduced)}`,
+        ].join('\n')
+      )
+      .join('\n\n');
+  }
+
+  // generic (screens)
   if (!levels.length) {
     return [
-      '### Level 1 — TBD',
+      '### TBD screen',
       '- **Status:** draft',
       '- **Goal:** TBD',
       '- **Layout notes:** TBD',
-      '- **New mechanics introduced:** none',
+      '- **New features introduced:** none',
     ].join('\n');
   }
 
   return levels
-    .map((level, index) =>
+    .map((screen) =>
       [
-        `### Level ${index + 1} — ${cleanValue(level.name, 'TBD')}`,
-        `- **Status:** ${cleanValue(level.status, 'draft')}`,
-        `- **Goal:** ${cleanValue(level.goal)}`,
-        `- **Layout notes:** ${cleanValue(level.layoutNotes)}`,
-        `- **New mechanics introduced:** ${cleanOptional(level.newMechanicsIntroduced)}`,
+        `### ${cleanValue(screen.name, 'TBD screen')}`,
+        `- **Status:** ${cleanValue(screen.status, 'draft')}`,
+        `- **Goal:** ${cleanValue(screen.goal)}`,
+        `- **Layout notes:** ${cleanValue(screen.layoutNotes)}`,
+        `- **New features introduced:** ${cleanOptional(screen.newItemsIntroduced)}`,
       ].join('\n')
     )
     .join('\n\n');
 }
 
-function buildProgressionSection(progression) {
+function buildProgressionSection(progression, specType) {
+  if (specType === 'game') {
+    return [
+      `- **Difficulty curve:** ${cleanValue(progression.difficultyCurve)}`,
+      `- **Economy / scoring (if any):** ${cleanOptional(progression.economyScoring)}`,
+    ].join('\n');
+  }
+
   return [
-    `- **Difficulty curve:** ${cleanValue(progression.difficultyCurve)}`,
+    `- **User flow / onboarding:** ${cleanValue(progression.difficultyCurve)}`,
     `- **Economy / scoring (if any):** ${cleanOptional(progression.economyScoring)}`,
   ].join('\n');
 }
@@ -481,7 +643,7 @@ function buildAssetsSection(assets) {
 function appendTaskEntry(content, answers, agentName) {
   const entry = [
     `### ${getTodayDateString()} — ${cleanValue(agentName, 'Project Init')} — project init`,
-    `**Did:** Ran the project init questionnaire and updated \`docs/GDD.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
+    `**Did:** Ran the project init questionnaire and updated \`docs/SPEC.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
     '**Why:** Establish a usable project brief and seed the design docs before implementation starts.',
     '**Status:** done',
     '**Review cycles:** 0',
@@ -509,9 +671,9 @@ function printSummary(answers) {
   console.log('\nSummary');
   console.log(`- Engine: ${cleanValue(answers.engine)}`);
   console.log(`- Title: ${cleanValue(answers.overview.title)}`);
-  console.log(`- Genre: ${cleanValue(answers.overview.genre)}`);
-  console.log(`- Mechanics: ${summarizeList(answers.mechanics, (item) => cleanValue(item.name, 'TBD mechanic'))}`);
-  console.log(`- Levels: ${summarizeList(answers.levels, (item) => cleanValue(item.name, 'TBD'))}`);
+  console.log(`- Category: ${cleanValue(answers.overview.category)}`);
+  console.log(`- Features: ${summarizeList(answers.mechanics, (item) => cleanValue(item.name, 'TBD'))}`);
+  console.log(`- Screens: ${summarizeList(answers.levels, (item) => cleanValue(item.name, 'TBD'))}`);
   console.log(`- Milestones: ${summarizeList(answers.milestones, (item) => cleanValue(item.name, 'TBD milestone'))}`);
   console.log(`- Assets: ${summarizeList(answers.assets, (item) => cleanValue(item.key, 'tbd-asset'))}`);
   console.log(`- Open questions: ${collectOpenQuestionsSummary(answers)}`);
@@ -521,73 +683,132 @@ async function collectInteractiveAnswers(existing, engines) {
   const rl = readline.createInterface({ input, output });
 
   try {
+    const specType = existing.spec.specType;
+
     console.log('Stage 1 — project basics');
+    const categoryLabel = specType === 'game' ? 'Genre' : 'Category';
+    const valuePropLabel = specType === 'game' ? 'Core loop' : 'Core value proposition';
+    const inspirationsLabel = specType === 'game' ? 'Inspirations / reference games' : 'Inspirations / references';
     const overview = {
-      title: await ask(rl, 'Title', existing.gdd.overview.title),
-      elevatorPitch: await ask(rl, 'Elevator pitch', existing.gdd.overview.elevatorPitch),
-      genre: await ask(rl, 'Genre', existing.gdd.overview.genre),
-      coreLoop: await ask(rl, 'Core loop', existing.gdd.overview.coreLoop),
-      platformInput: await ask(rl, 'Platform / input', existing.gdd.overview.platformInput),
-      visualStyle: await ask(rl, 'Visual style', existing.gdd.overview.visualStyle),
-      targetAudience: await ask(rl, 'Target audience', existing.gdd.overview.targetAudience),
-      toneMood: await ask(rl, 'Tone / mood', existing.gdd.overview.toneMood),
-      targetSessionLength: await ask(rl, 'Target session length', existing.gdd.overview.targetSessionLength),
-      scopeConstraints: await ask(rl, 'Scope & constraints', existing.gdd.overview.scopeConstraints),
-      inspirations: await ask(rl, 'Inspirations / reference games', existing.gdd.overview.inspirations, { fallback: NONE }),
+      title: await ask(rl, 'Title', existing.spec.overview.title),
+      elevatorPitch: await ask(rl, 'Elevator pitch', existing.spec.overview.elevatorPitch),
+      category: await ask(rl, categoryLabel, existing.spec.overview.category),
+      coreValueProp: await ask(rl, valuePropLabel, existing.spec.overview.coreValueProp),
+      platformInput: await ask(rl, 'Platform / input', existing.spec.overview.platformInput),
+      visualStyle: await ask(rl, 'Visual style', existing.spec.overview.visualStyle),
+      targetAudience: await ask(rl, 'Target audience', existing.spec.overview.targetAudience),
+      toneMood: await ask(rl, 'Tone / mood', existing.spec.overview.toneMood),
+      targetSessionLength: await ask(rl, 'Target session length', existing.spec.overview.targetSessionLength),
+      scopeConstraints: await ask(rl, 'Scope & constraints', existing.spec.overview.scopeConstraints),
+      inspirations: await ask(rl, inspirationsLabel, existing.spec.overview.inspirations, { fallback: NONE }),
     };
 
-    console.log('\nStage 2 — gameplay and progression');
-    const mechanics = await collectRepeatedEntries(
-      rl,
-      'mechanics',
-      existing.gdd.mechanics,
-      () => ({
-        name: '',
-        status: 'draft',
-        description: '',
-        playerInput: '',
-        winFailCondition: '',
-        openQuestions: NONE,
-      }),
-      () => [
-        { key: 'name', label: 'Mechanic name' },
-        { key: 'status', label: 'Status', options: { fallback: 'draft' } },
-        { key: 'description', label: 'Description' },
-        { key: 'playerInput', label: 'Player input' },
-        { key: 'winFailCondition', label: 'Win/fail condition' },
-        { key: 'openQuestions', label: 'Open questions', options: { fallback: NONE } },
-      ]
-    );
+    let mechanics;
+    let levels;
+    let progression;
 
-    const levels = await collectRepeatedEntries(
-      rl,
-      'levels',
-      existing.gdd.levels,
-      () => ({
-        name: '',
-        status: 'draft',
-        goal: '',
-        layoutNotes: '',
-        newMechanicsIntroduced: NONE,
-      }),
-      () => [
-        { key: 'name', label: 'Level name' },
-        { key: 'status', label: 'Status', options: { fallback: 'draft' } },
-        { key: 'goal', label: 'Goal' },
-        { key: 'layoutNotes', label: 'Layout notes' },
-        { key: 'newMechanicsIntroduced', label: 'New mechanics introduced', options: { fallback: NONE } },
-      ]
-    );
+    if (specType === 'game') {
+      console.log('\nStage 2 — gameplay and progression');
+      mechanics = await collectRepeatedEntries(
+        rl,
+        'mechanics',
+        existing.spec.mechanics,
+        () => ({
+          name: '',
+          status: 'draft',
+          description: '',
+          playerInput: '',
+          winFailCondition: '',
+          openQuestions: NONE,
+        }),
+        () => [
+          { key: 'name', label: 'Mechanic name' },
+          { key: 'status', label: 'Status', options: { fallback: 'draft' } },
+          { key: 'description', label: 'Description' },
+          { key: 'playerInput', label: 'Player input' },
+          { key: 'winFailCondition', label: 'Win/fail condition' },
+          { key: 'openQuestions', label: 'Open questions', options: { fallback: NONE } },
+        ]
+      );
 
-    const progression = {
-      difficultyCurve: await ask(rl, 'Difficulty curve', existing.gdd.progression.difficultyCurve),
-      economyScoring: await ask(rl, 'Economy / scoring', existing.gdd.progression.economyScoring, { fallback: NONE }),
-    };
+      levels = await collectRepeatedEntries(
+        rl,
+        'levels',
+        existing.spec.levels,
+        () => ({
+          name: '',
+          status: 'draft',
+          goal: '',
+          layoutNotes: '',
+          newItemsIntroduced: NONE,
+        }),
+        () => [
+          { key: 'name', label: 'Level name' },
+          { key: 'status', label: 'Status', options: { fallback: 'draft' } },
+          { key: 'goal', label: 'Goal' },
+          { key: 'layoutNotes', label: 'Layout notes' },
+          { key: 'newItemsIntroduced', label: 'New mechanics introduced', options: { fallback: NONE } },
+        ]
+      );
+
+      progression = {
+        difficultyCurve: await ask(rl, 'Difficulty curve', existing.spec.progression.difficultyCurve),
+        economyScoring: await ask(rl, 'Economy / scoring', existing.spec.progression.economyScoring, { fallback: NONE }),
+      };
+    } else {
+      console.log('\nStage 2 — features and screens');
+      mechanics = await collectRepeatedEntries(
+        rl,
+        'features',
+        existing.spec.mechanics,
+        () => ({
+          name: '',
+          status: 'draft',
+          description: '',
+          playerInput: '',
+          winFailCondition: '',
+          openQuestions: NONE,
+        }),
+        () => [
+          { key: 'name', label: 'Feature name' },
+          { key: 'status', label: 'Status', options: { fallback: 'draft' } },
+          { key: 'description', label: 'Description' },
+          { key: 'playerInput', label: 'User interaction' },
+          { key: 'winFailCondition', label: 'Success / failure state' },
+          { key: 'openQuestions', label: 'Open questions', options: { fallback: NONE } },
+        ]
+      );
+
+      levels = await collectRepeatedEntries(
+        rl,
+        'screens',
+        existing.spec.levels,
+        () => ({
+          name: '',
+          status: 'draft',
+          goal: '',
+          layoutNotes: '',
+          newItemsIntroduced: NONE,
+        }),
+        () => [
+          { key: 'name', label: 'Screen name' },
+          { key: 'status', label: 'Status', options: { fallback: 'draft' } },
+          { key: 'goal', label: 'Goal' },
+          { key: 'layoutNotes', label: 'Layout notes' },
+          { key: 'newItemsIntroduced', label: 'New features introduced', options: { fallback: NONE } },
+        ]
+      );
+
+      progression = {
+        difficultyCurve: await ask(rl, 'User flow / onboarding', existing.spec.progression.difficultyCurve),
+        economyScoring: await ask(rl, 'Economy / scoring', existing.spec.progression.economyScoring, { fallback: NONE }),
+      };
+    }
 
     const milestones = await collectRepeatedEntries(
       rl,
       'milestones',
-      existing.gdd.milestones,
+      existing.spec.milestones,
       () => ({
         name: '',
         target: '',
@@ -596,7 +817,7 @@ async function collectInteractiveAnswers(existing, engines) {
         status: 'planned',
       }),
       () => [
-        { key: 'name', label: 'Milestone name (e.g. Prototype, Vertical slice, Alpha, Beta, Release)' },
+        { key: 'name', label: 'Milestone name (e.g. Prototype, Alpha, Beta, Release)' },
         { key: 'target', label: 'Target (date or condition)' },
         { key: 'goal', label: 'Goal (what exists when reached)' },
         { key: 'exitCriteria', label: 'Exit criteria' },
@@ -604,7 +825,7 @@ async function collectInteractiveAnswers(existing, engines) {
       ]
     );
 
-    const outOfScope = await ask(rl, 'Out-of-scope items', existing.gdd.outOfScope, { fallback: UNANSWERED });
+    const outOfScope = await ask(rl, 'Out-of-scope items', existing.spec.outOfScope, { fallback: UNANSWERED });
     const projectOpenQuestions = await ask(rl, 'Project-wide open questions', '', { fallback: NONE });
 
     console.log('\nStage 3 — technical structure');
@@ -679,8 +900,9 @@ function normalizeAnswersFromFile(raw) {
     overview: {
       title: asString(overview.title),
       elevatorPitch: asString(overview.elevatorPitch),
-      genre: asString(overview.genre),
-      coreLoop: asString(overview.coreLoop),
+      // accept both new (category/coreValueProp) and legacy (genre/coreLoop) field names
+      category: asString(overview.category || overview.genre),
+      coreValueProp: asString(overview.coreValueProp || overview.coreLoop),
       platformInput: asString(overview.platformInput),
       visualStyle: asString(overview.visualStyle),
       targetAudience: asString(overview.targetAudience),
@@ -702,7 +924,7 @@ function normalizeAnswersFromFile(raw) {
       status: asString(entry.status, 'draft'),
       goal: asString(entry.goal),
       layoutNotes: asString(entry.layoutNotes),
-      newMechanicsIntroduced: asString(entry.newMechanicsIntroduced, NONE),
+      newItemsIntroduced: asString(entry.newItemsIntroduced, NONE),
     })),
     progression: {
       difficultyCurve: asString(progression.difficultyCurve),
@@ -747,7 +969,7 @@ async function main() {
   const enginesRoot = join(repoRoot, 'engines');
   const engines = listEngines(enginesRoot);
   const paths = {
-    gdd: join(docsRoot, 'GDD.md'),
+    spec: join(docsRoot, 'SPEC.md'),
     architecture: join(docsRoot, 'ARCHITECTURE.md'),
     assets: join(docsRoot, 'ASSETS.md'),
     tasks: join(docsRoot, 'TASKS.md'),
@@ -760,7 +982,7 @@ async function main() {
   }
 
   const existing = {
-    gdd: parseGdd(readText(paths.gdd)),
+    spec: parseSpec(readText(paths.spec)),
     architecture: parseArchitecture(readText(paths.architecture)),
     assets: parseAssets(readText(paths.assets)),
   };
@@ -801,13 +1023,29 @@ async function main() {
     return;
   }
 
-  let updatedGdd = readText(paths.gdd);
-  updatedGdd = replaceSection(updatedGdd, '## Overview', '## Status legend', buildGddOverview(answers.overview));
-  updatedGdd = replaceSection(updatedGdd, '## Mechanics', '## Levels / Content', buildMechanicsSection(answers.mechanics));
-  updatedGdd = replaceSection(updatedGdd, '## Levels / Content', '## Progression & balancing', buildLevelsSection(answers.levels));
-  updatedGdd = replaceSection(updatedGdd, '## Progression & balancing', '## Milestones', buildProgressionSection(answers.progression));
-  updatedGdd = replaceSection(updatedGdd, '## Milestones', '## Out of scope', buildMilestonesSection(answers.milestones));
-  updatedGdd = replaceSection(updatedGdd, '## Out of scope', GDD_OUT_OF_SCOPE_END, buildOutOfScopeSection(answers.outOfScope));
+  let updatedSpec = readText(paths.spec);
+
+  // Stamp SPEC.md from engine pack if engine has changed or pack has a spec template
+  if (selectedEngine.specTemplatePath && selectedEngine.name !== existing.architecture.engine) {
+    updatedSpec = readText(selectedEngine.specTemplatePath);
+    console.log(`\nStamping engines/${selectedEngine.name}/SPEC.md into docs/SPEC.md.`);
+  }
+
+  const newSpecType = detectSpecType(updatedSpec);
+  updatedSpec = replaceSection(updatedSpec, '## Overview', '## Status legend', buildSpecOverview(answers.overview, newSpecType));
+
+  if (newSpecType === 'game') {
+    updatedSpec = replaceSection(updatedSpec, '## Mechanics', '## Levels / Content', buildMechanicsSection(answers.mechanics, 'game'));
+    updatedSpec = replaceSection(updatedSpec, '## Levels / Content', '## Progression & balancing', buildLevelsSection(answers.levels, 'game'));
+    updatedSpec = replaceSection(updatedSpec, '## Progression & balancing', '## Milestones', buildProgressionSection(answers.progression, 'game'));
+  } else {
+    updatedSpec = replaceSection(updatedSpec, '## Features', '## Screens / Content', buildMechanicsSection(answers.mechanics, 'generic'));
+    updatedSpec = replaceSection(updatedSpec, '## Screens / Content', '## Progression & polish', buildLevelsSection(answers.levels, 'generic'));
+    updatedSpec = replaceSection(updatedSpec, '## Progression & polish', '## Milestones', buildProgressionSection(answers.progression, 'generic'));
+  }
+
+  updatedSpec = replaceSection(updatedSpec, '## Milestones', '## Out of scope', buildMilestonesSection(answers.milestones));
+  updatedSpec = replaceSection(updatedSpec, '## Out of scope', SPEC_OUT_OF_SCOPE_END, buildOutOfScopeSection(answers.outOfScope));
 
   let architectureBase = readText(paths.architecture);
   if (selectedEngine.name !== existing.architecture.engine) {
@@ -815,17 +1053,21 @@ async function main() {
     console.log(`\nStamping engines/${selectedEngine.name}/ARCHITECTURE.md into docs/ARCHITECTURE.md.`);
   }
 
-  const updatedArchitecture = replaceSection(
-    replaceSection(
-      architectureBase,
-      '## Scene flow',
+  // Replace architecture sections only if the headings are present in the template
+  let updatedArchitecture = architectureBase;
+  if (updatedArchitecture.includes('## Scene flow') && updatedArchitecture.includes('## State management')) {
+    updatedArchitecture = replaceSection(
+      replaceSection(
+        updatedArchitecture,
+        '## Scene flow',
+        '## State management',
+        buildArchitectureSection(answers.architecture.sceneFlow)
+      ),
       '## State management',
-      buildArchitectureSection(answers.architecture.sceneFlow)
-    ),
-    '## State management',
-    '## Asset pipeline',
-    buildArchitectureSection(answers.architecture.stateManagement)
-  );
+      '## Asset pipeline',
+      buildArchitectureSection(answers.architecture.stateManagement)
+    );
+  }
 
   const updatedAssets = replaceSection(
     readText(paths.assets),
@@ -836,13 +1078,13 @@ async function main() {
 
   const updatedTasks = appendTaskEntry(readText(paths.tasks), answers, agentName);
 
-  writeText(paths.gdd, updatedGdd);
+  writeText(paths.spec, updatedSpec);
   writeText(paths.architecture, updatedArchitecture);
   writeText(paths.assets, updatedAssets);
   writeText(paths.tasks, updatedTasks);
 
   console.log('\nUpdated:');
-  console.log(`- ${paths.gdd}`);
+  console.log(`- ${paths.spec}`);
   console.log(`- ${paths.architecture}`);
   console.log(`- ${paths.assets}`);
   console.log(`- ${paths.tasks}`);

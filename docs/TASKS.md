@@ -19,6 +19,26 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-19 — Product Engineer — de-game-ify core scaffold
+
+**Did:** Removed game-specific terminology from all repo-level / core scaffold files so CrunchTime works equally well for mobile apps (and other non-game projects). Changes:
+- `README.md`: neutral headline ("CrunchTime — Multi-Agent App Scaffold"), `my-app` example, "project repo" language
+- `docs/SPEC.md`: generic product spec template (Category, Core value proposition, Features, Screens, Progression & polish) replacing the game GDD template
+- `docs/ARCHITECTURE.md`: engine-agnostic stub (no Phaser hardcoding); project init stamps it from the chosen engine pack
+- `docs/BUGS.md`: "Product Engineer" and "broken feature" instead of "Gameplay Engineer" / "broken mechanic"
+- `docs/MIGRATIONS.md`: "project repo" instead of "game repo"
+- `docs/ASSETS.md`: neutral example assets (`app-icon`, generic `bg-music-main`)
+- `engines/phaser/SPEC.md`, `engines/godot/SPEC.md`: game-specific SPEC templates moved here; project init stamps `docs/SPEC.md` from the chosen engine pack
+- `engines/react-native/`: new mobile app engine pack stub (pack.json, ARCHITECTURE.md, SPEC.md, SQUAD.md, conventions.md)
+- `engines/README.md`: generalized required headings (removed `## Scene flow` / `## State management` requirement; added `SPEC.md` to pack anatomy)
+- `tools/project-init/init-project.mjs`: engine-aware spec stamping; generic questionnaire for non-game engines (Category, Features, Screens, User flow); game questionnaire for Phaser/Godot; path fixed from `docs/GDD.md` → `docs/SPEC.md`
+
+**Why:** The repo was game-only in its default state; using it for mobile apps required fighting against game terminology throughout the docs and tooling.
+**Status:** done
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Godot pack's SPEC.md is identical to Phaser's (both are game GDD) — needs a Godot-specific pass if desired. React Native pack is a stub — needs real conventions review before first production use.
+
 ### 2026-08-19 — Lead — lead orchestration efficiency tuning
 **Did:** Tightened `.github/chatmodes/take-the-lead.chatmode.md` to read the full required doc set (`docs/ARCHITECTURE.md` and `docs/ASSETS.md` included), default to one Lead session plus one worker, favor chatmode-first routing, keep worker tasks narrowly scoped, and avoid parallel agents unless lanes are truly independent. Updated `README.md` with lightweight usage guidance.
 **Why:** Multi-agent coordination can burn credits quickly; the Lead flow should bias toward milestone routing with minimal session fan-out.

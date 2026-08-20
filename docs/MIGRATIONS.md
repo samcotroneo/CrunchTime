@@ -1,12 +1,12 @@
 # Migrations
 
-Owned by: Lead + Build/Tooling Engineer. Use this to keep game repos current
+Owned by: Lead + Build/Tooling Engineer. Use this to keep project repos current
 with core scaffold improvements.
 
 ## Upstream sync (for repos created from GitHub template)
 
 This procedure assumes:
-- your game repo is `origin`
+- your project repo is `origin`
 - core scaffold repo is `upstream` (`samcotroneo/CrunchTime`)
 
 ### Agent-run checklist
@@ -18,7 +18,7 @@ This procedure assumes:
 6. If first merge fails due to unrelated history, retry once with
    `--allow-unrelated-histories`.
 7. Resolve conflicts, commit merge, push sync branch, open PR.
-8. Run scaffold refresh commands in the game repo.
+8. Run scaffold refresh commands in the project repo.
 
 ### Commands
 ```bash

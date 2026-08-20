@@ -6,39 +6,39 @@ agents whether it's safe to build against.
 ## Overview
 - **Title:**
 - **Elevator pitch (one sentence):**
-- **Category:** (e.g. mobile app, web app, game, CLI tool)
-- **Core value proposition (one sentence):**
+- **Genre:**
+- **Core loop (one sentence):**
 - **Platform / input:**
 - **Visual style:**
 - **Target audience:**
 - **Tone / mood:**
 - **Target session length:**
 - **Scope & constraints:** (deadline, team size, must-reuse assets, etc.)
-- **Inspirations / references:** (optional)
+- **Inspirations / reference games:** (optional)
 
 ## Status legend
 `draft` → still changing, do not implement · `ready` → stable, Engineer may
 implement · `implemented` → shipped, changes need a new section.
 
-## Features
+## Mechanics
 
-### [Feature name]
+### [Mechanic name]
 - **Status:** draft
 - **Description:**
-- **User interaction:**
-- **Success / failure state:**
+- **Player input:**
+- **Win/fail condition:**
 - **Open questions:**
 
-## Screens / Content
+## Levels / Content
 
-### [Screen or content name]
+### Level 1 — [name]
 - **Status:** draft
 - **Goal:**
 - **Layout notes:**
-- **New features introduced:**
+- **New mechanics introduced:**
 
-## Progression & polish
-- **User flow / onboarding:**
+## Progression & balancing
+- **Difficulty curve:**
 - **Economy / scoring (if any):**
 
 ## Milestones
