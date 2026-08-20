@@ -2,8 +2,8 @@
 
 A markdown-driven multi-agent setup for building apps with Claude Code
 and/or GitHub Copilot. Engine-agnostic at the core; per-engine conventions
-live in `engines/` (Phaser 3 and Godot 4 for games, React Native for mobile
-apps, and more).
+live in `engines/` (Phaser 3 and Godot 4 for games, Capacitor and React
+Native for mobile apps, and more).
 
 ## Setup
 
@@ -47,6 +47,37 @@ this core repo, follow the guide in `docs/MIGRATIONS.md`.
 mirror it. After editing `AGENTS.md`, run `node tools/setup.mjs --sync` to
 refresh the copies (setup warns you when they drift). Prefer symlinks?
 `node tools/setup.mjs --symlinks`.
+
+## Retrofitting an existing project
+
+Already have a Capacitor (or other) project with working code? Use the
+**retrofit flow** instead of (or after) the normal init:
+
+1. Copy the scaffold files (`docs/`, `tools/`, `engines/`, `AGENTS.md`,
+   `CLAUDE.md`, `.github/`) into your existing repo. Skip any file that
+   already exists.
+2. Run `node tools/setup.mjs` to install tool dependencies.
+3. Run `node tools/project-init/init-project.mjs` — the questionnaire
+   **re-reads whatever is already in `docs/`** and pre-fills every prompt,
+   so you can confirm or overwrite each answer. Select the `capacitor` (or
+   matching) engine pack. Answer Stage 5 engine-expert questions from your
+   existing code.
+4. Run the **retrofit chatmode**
+   (`.github/chatmodes/retrofit.chatmode.md`) — this is the archaeology
+   pass. It sweeps `src/`, `package.json`, `capacitor.config.*`, `ios/`,
+   `android/`, and CI config, then:
+   - fills `docs/ARCHITECTURE.md §Engine notes` with what is actually
+     installed (plugins, auth, state library, routing, OTA, CI)
+   - marks already-built features/screens as `status: implemented` in
+     `docs/SPEC.md`
+   - catalogues existing assets in `docs/ASSETS.md`
+   - writes a state-of-the-world handoff entry in `docs/TASKS.md`
+   - files any spotted defects in `docs/BUGS.md`
+
+The key difference from a green-field init: the questionnaire *describes*
+what exists; the retrofit chatmode *discovers* implementation details the
+questionnaire cannot infer; and doc statuses are manually reviewed to
+distinguish `implemented` from `ready` from `draft`.
 
 ## How the team works
 See `docs/SQUAD.md` for roster and coordination rules. Short version: Lead

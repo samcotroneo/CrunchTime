@@ -4,9 +4,8 @@
 Owned by: Build/Tooling Engineer. Update when structure changes — this is
 what the App Engineer builds against.
 
-> Stub pack: structure below is a reasonable Capacitor + React + Vite default.
-> The Engine Expert stage of project init will tailor this to your chosen web
-> framework and native feature set.
+> The Engine Expert stage of project init (Stage 5) will tailor this to your
+> chosen web framework and native feature set.
 
 ## Stack
 Capacitor 6, React + Vite, TypeScript

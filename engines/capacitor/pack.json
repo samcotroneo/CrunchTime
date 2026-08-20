@@ -1,7 +1,7 @@
 {
   "name": "capacitor",
   "label": "Capacitor (web app → iOS/Android)",
-  "status": "stub",
+  "status": "ready",
   "engineExpertQuestions": [
     {
       "key": "webFramework",
