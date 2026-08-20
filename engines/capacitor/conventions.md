@@ -1,8 +1,8 @@
 # Capacitor — stack & conventions
 
-> Stub pack: conventions below are a starting point. The Engine Expert stage
-> of project init will ask about your web framework and native features, then
-> populate `docs/ARCHITECTURE.md` with project-specific guidance.
+> Conventions below are a starting point. The Engine Expert stage of project
+> init will ask about your web framework and native features, then populate
+> `docs/ARCHITECTURE.md` with project-specific guidance.
 
 ## Stack
 - Runtime: Capacitor 6
