@@ -36,3 +36,8 @@ file) once decided.
 2. Build Engineer optimizes/imports them into `assets/build/`
 3. Game code loads only by key, defined in `docs/ASSETS.md` — never a raw
    path
+
+## Engine notes
+Engine Expert findings go here after the project init Engine Expert stage
+runs. Includes rendering backend rationale, export preset configuration,
+scripting language choice, and any project-specific Godot 4 notes.

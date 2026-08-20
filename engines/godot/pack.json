@@ -1,5 +1,32 @@
 {
   "name": "godot",
   "label": "Godot 4 (GDScript)",
-  "status": "stub"
+  "status": "stub",
+  "engineExpertQuestions": [
+    {
+      "key": "targetPlatform",
+      "label": "Target platform — desktop (Windows/macOS/Linux), mobile (iOS/Android), web (HTML5), or multiple",
+      "hint": "Export templates, renderer choice (Forward+, Mobile, Compatibility), and threading restrictions all depend on the target."
+    },
+    {
+      "key": "renderingBackend",
+      "label": "Rendering backend — Forward+ (default, desktop), Mobile, or Compatibility (web/old hardware)",
+      "hint": "Forward+ has the best visuals but does not run in the browser. Compatibility is required for HTML5 export."
+    },
+    {
+      "key": "multiplayerNeeds",
+      "label": "Multiplayer — none, local co-op, or online (ENet / WebSocket)",
+      "hint": "Godot's High-Level Multiplayer API changes the state synchronisation architecture significantly."
+    },
+    {
+      "key": "saveStrategy",
+      "label": "Save / persistence strategy — none, local file (ConfigFile / JSON), cloud save",
+      "hint": "On HTML5 export, file access is via the virtual file system stored in IndexedDB, not the OS file system."
+    },
+    {
+      "key": "scriptingLanguage",
+      "label": "Scripting language — GDScript (default) or C#",
+      "hint": "C# has better IDE tooling and performance for CPU-intensive code, but requires .NET SDK and does not run on iOS/web without extra configuration."
+    }
+  ]
 }

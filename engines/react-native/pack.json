@@ -1,5 +1,32 @@
 {
   "name": "react-native",
   "label": "React Native (Expo + TypeScript)",
-  "status": "stub"
+  "status": "stub",
+  "engineExpertQuestions": [
+    {
+      "key": "expoWorkflow",
+      "label": "Expo workflow — Managed (default) or Bare",
+      "hint": "Managed workflow means Expo controls the native build; Bare gives full native project access but requires maintaining ios/ and android/ yourself."
+    },
+    {
+      "key": "navigationLibrary",
+      "label": "Navigation — Expo Router (file-based, default) or React Navigation",
+      "hint": "Expo Router aligns with web routing conventions and deep linking works out of the box. React Navigation offers more flexibility but requires manual deep-link configuration."
+    },
+    {
+      "key": "targetPlatforms",
+      "label": "Target platforms — iOS only, Android only, or both",
+      "hint": "Both platforms are supported, but some community libraries behave differently on each. Knowing the target up front avoids late-breaking platform-specific rewrites."
+    },
+    {
+      "key": "authStrategy",
+      "label": "Authentication — none, OAuth/social login, email+password, biometric",
+      "hint": "Determines which Expo Auth Session / SecureStore patterns and native permission prompts to configure."
+    },
+    {
+      "key": "offlineSupport",
+      "label": "Offline support — none, read-only cache, full offline-first",
+      "hint": "Full offline-first requires a local database (WatermelonDB or SQLite via expo-sqlite) and a sync strategy on reconnect."
+    }
+  ]
 }

@@ -9,8 +9,9 @@ and how work moves between agents.
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
 | Designer | `docs/SPEC.md`, level/mechanic specs | Build Engineer |
-| Gameplay Engineer | `src/` or `scenes/` implementation | — |
-| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
+| Engine Expert | `docs/ARCHITECTURE.md` §Engine notes (one-shot at init) | Designer, Build Engineer |
+| Gameplay Engineer | `src/` implementation | — |
+| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer, Engine Expert |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
 | QA | Playtesting, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
 
@@ -18,8 +19,12 @@ and how work moves between agents.
 
 1. Designer and Build Engineer may work concurrently — design specs and
    build tooling rarely conflict.
-2. Gameplay Engineer only starts once the relevant SPEC section is marked
-   `status: ready`.
+2. Engine Expert runs once, immediately after project init, before Gameplay
+   Engineer starts. It asks engine-specific questions (target platform, physics
+   backend, save strategy, etc.) and writes findings into
+   `docs/ARCHITECTURE.md §Engine notes`.
+3. Gameplay Engineer only starts once the relevant SPEC section is marked
+   `status: ready` AND Engine Expert has written its notes.
 3. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.
 4. QA is always last in a feature's lifecycle, never parallel to Engineer
@@ -43,6 +48,7 @@ files:
 ## Access policy
 
 - Designer, QA: read-only on `src/` and `scenes/`. QA also writes `docs/BUGS.md`.
+- Engine Expert: read-only on `src/` and `scenes/`; writes only `docs/ARCHITECTURE.md`.
 - Gameplay Engineer: read/write on `src/` and `scenes/`, no access to `tools/asset-gen/`.
 - Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`,
   `docs/RELEASES.md`, `CHANGELOG.md`; read-only elsewhere.

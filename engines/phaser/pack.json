@@ -1,5 +1,32 @@
 {
   "name": "phaser",
   "label": "Phaser 3 (TypeScript + Vite)",
-  "status": "ready"
+  "status": "ready",
+  "engineExpertQuestions": [
+    {
+      "key": "targetPlatform",
+      "label": "Target platform — desktop browser, mobile web, or both",
+      "hint": "Mobile web changes recommendations for input handling, scale mode, audio unlock, and texture memory budget."
+    },
+    {
+      "key": "multiplayerNeeds",
+      "label": "Multiplayer — none, local co-op, or online (WebSocket / WebRTC)",
+      "hint": "Online multiplayer changes state synchronisation architecture significantly."
+    },
+    {
+      "key": "physicsBackend",
+      "label": "Physics backend — Arcade (default), Matter.js, or none",
+      "hint": "Arcade physics is fast but axis-aligned only. Matter.js supports arbitrary polygon shapes and joints but has a higher CPU cost."
+    },
+    {
+      "key": "saveStrategy",
+      "label": "Save / persistence strategy — none, localStorage, IndexedDB, server-side",
+      "hint": "Determines which storage API to wrap in the save system and whether offline play is supported."
+    },
+    {
+      "key": "audioNeeds",
+      "label": "Audio needs — none, simple SFX only, full music + SFX",
+      "hint": "Full music + SFX on mobile web requires careful audio unlock and audio sprite bundling strategies."
+    }
+  ]
 }

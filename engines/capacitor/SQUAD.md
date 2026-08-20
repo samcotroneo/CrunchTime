@@ -11,27 +11,26 @@ and how work moves between agents.
 | Designer | `docs/SPEC.md`, feature/screen specs | Build Engineer |
 | Engine Expert | `docs/ARCHITECTURE.md` §Engine notes (one-shot at init) | Designer, Build Engineer |
 | App Engineer | `src/` implementation | — |
-| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer, Engine Expert |
+| Build Engineer | Build config, native sync, `tools/asset-gen/`, releases | Designer, Engine Expert |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | User testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
+| QA | Device testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
 
 ## Coordination rules
 
 1. Designer and Build Engineer may work concurrently — design specs and
    build tooling rarely conflict.
-2. Engine Expert runs once, immediately after project init, before App
-   Engineer starts. It asks engine-specific questions (Expo workflow, navigation
-   library, platform targets, etc.) and writes findings into
-   `docs/ARCHITECTURE.md §Engine notes`.
+2. Engine Expert runs once, immediately after project init, before App Engineer
+   starts. It asks engine-specific questions (web framework, native features,
+   OTA strategy) and writes findings into `docs/ARCHITECTURE.md §Engine notes`.
 3. App Engineer only starts once the relevant SPEC section is marked
    `status: ready` AND Engine Expert has written its notes.
-3. Reviewer is always a gate. No feature moves to QA until Reviewer has
+4. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.
-4. QA is always last in a feature's lifecycle, never parallel to Engineer
+5. QA is always last in a feature's lifecycle, never parallel to Engineer
    on the same feature.
-5. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
+6. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
    `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
-6. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
+7. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
 
 ## Handoff protocol

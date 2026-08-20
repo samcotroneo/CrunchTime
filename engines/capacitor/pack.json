@@ -1,0 +1,32 @@
+{
+  "name": "capacitor",
+  "label": "Capacitor (web app → iOS/Android)",
+  "status": "stub",
+  "engineExpertQuestions": [
+    {
+      "key": "webFramework",
+      "label": "Web framework — e.g. React + Vite (default), Vue, Angular, vanilla",
+      "hint": "Capacitor wraps any web app. React + Vite is the most common pairing; the Engine Expert will tailor architecture notes to whichever you choose."
+    },
+    {
+      "key": "targetPlatforms",
+      "label": "Target platforms — ios, android, or both",
+      "hint": "Determines which native projects to maintain and which Capacitor plugins to include."
+    },
+    {
+      "key": "nativeFeatures",
+      "label": "Native features needed — e.g. camera, push notifications, biometrics, file system, none",
+      "hint": "Each native feature requires a Capacitor plugin. Listing them up front lets the Engine Expert flag any community vs. official plugin tradeoffs."
+    },
+    {
+      "key": "otaStrategy",
+      "label": "OTA update strategy — Capawesome Live Update, Appflow, none",
+      "hint": "Capacitor supports live JS bundle updates without a store release. If you plan to use this, the Engine Expert will add configuration notes."
+    },
+    {
+      "key": "authStrategy",
+      "label": "Authentication — none, OAuth/OIDC (social login), email+password, biometric",
+      "hint": "Affects which Capacitor plugins and secure storage patterns the Engine Expert recommends."
+    }
+  ]
+}
