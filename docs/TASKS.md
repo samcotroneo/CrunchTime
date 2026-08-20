@@ -19,6 +19,14 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-08-20 — Lead — lead CLI wrapper
+**Did:** Added `tools/lead/lead.mjs`. The script detects whether the calling environment supports chatmodes (VS Code integrated terminal, GitHub Copilot Chat, Cursor) and routes to `.github/chatmodes/take-the-lead.chatmode.md` when they are available. When chatmodes are not supported it prints a textual lead brief — in-flight work, open blocker/major bugs from `docs/BUGS.md`, and aging open questions — so a human or agent can identify the next handoff without an interactive chatmode session. Updated `README.md` to document the new command under Lead orchestration.
+**Why:** Resolved the open question from the lead orchestration chatmode entry: add the wrapper only when chatmodes are supported; otherwise fall back gracefully rather than duplicating the full interactive flow in a script.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
 ### 2026-08-20 — Lead — model routing defaults
 **Did:** Added a project-level model routing policy for agent orchestration in `AGENTS.md` and surfaced the same defaults in `README.md`. Defaults now specify Lead work on `gpt-5.6-sol` (high reasoning), sub-agents on `gpt-5.6-luna`, escalation to `gpt-5.6-sol` (medium reasoning), Terra as non-default, and a fallback path to the spawning agent's settings when policy/runtime restrictions block preferences.
 **Why:** Keep agent quality predictable while minimizing model cost by making lightweight execution the default and defining clear escalation/fallback rules.

@@ -196,6 +196,12 @@ handoffs in `docs/TASKS.md`. Good trigger phrases include “take the lead” an
 Lead route the next one or two handoffs, reuse the docs as shared state, and
 avoid spawning extra worker sessions unless the work is truly independent.
 
+`node tools/lead/lead.mjs` is a lightweight CLI companion. It detects whether
+your environment supports chatmodes and routes you to the chatmode if it does.
+When chatmodes are not available it prints a textual lead brief — in-flight
+work, open blockers from `docs/BUGS.md`, and aging open questions — so you can
+start the next handoff without an interactive session.
+
 ### Default model policy (cost-oriented)
 - Lead/coordinator work: `gpt-5.6-sol` with high reasoning effort.
 - Sub-agent default: `gpt-5.6-luna`.
