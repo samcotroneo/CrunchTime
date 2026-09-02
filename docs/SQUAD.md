@@ -8,11 +8,11 @@ and how work moves between agents.
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/SPEC.md`, feature/mechanic specs | Build Engineer |
+| Designer | `docs/SPEC.md`, feature/mechanic specs, `docs/ART_STYLE.md` and its engine overlay, approval of any style profile change | Build Engineer |
 | Product Engineer | `src/` implementation | — |
-| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer |
+| Build Engineer | Build config, asset generation tooling (`tools/asset-gen/`), packing/import pipeline, `docs/ASSETS.md` schema + CI checks, releases | Designer |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | User testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
+| QA | User testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits, conformance of generated/commissioned assets to `docs/ART_STYLE.md` | — |
 
 ## Coordination rules
 
@@ -28,6 +28,10 @@ and how work moves between agents.
    `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
 6. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
+7. Changes to `docs/ART_STYLE.md` (or its `style_profile_version`) require
+   Designer sign-off logged in `docs/TASKS.md` before any agent briefs new
+   assets against the new version — see `docs/ART_STYLE.md` for the
+   approval gate and `docs/ASSETS.md` for how briefs pin a version.
 
 ## Handoff protocol
 
@@ -43,6 +47,7 @@ files:
 ## Access policy
 
 - Designer, QA: read-only on `src/`. QA also writes `docs/BUGS.md`.
+- Designer: read/write on `docs/ART_STYLE.md` and `engines/<engine>/ART_STYLE.md`.
 - Product Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
 - Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`,
   `docs/RELEASES.md`, `CHANGELOG.md`; read-only elsewhere.

@@ -19,6 +19,39 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-09-02 — Designer — layered art-direction policy
+**Did:** Added a canonical, versioned `docs/ART_STYLE.md` (engine-agnostic
+cohesion policy: visual pillars, shape language, color system, materials,
+reference board, style profile version, external-skill compliance note,
+validation checklist). Added a per-engine `ART_STYLE.md` overlay to each
+engine pack (`phaser`, `godot`: camera/sprites/tilesets/world readability;
+`capacitor`, `react-native`: visual system/typography/spacing/tokens/
+iconography/accessibility), each referencing the root policy. Updated
+`docs/ASSETS.md` to require `style_profile_version`/`style_profile_ref` on
+every `needs-generation` entry, mark the legacy `generation` field
+deprecated/non-authoritative, and add a CI/QA-enforceable validation
+checklist plus explicit external-skill/agent compliance language. Updated
+`docs/SQUAD.md` (root + all four engine variants) so Designer explicitly
+owns art-direction artifacts and style-profile approval, Build Engineer
+explicitly owns asset generation tooling/packing/schema CI checks, and QA
+explicitly verifies style-policy conformance alongside technical audits.
+Cross-linked the new docs from `AGENTS.md`, `engines/README.md`, and
+`README.md`.
+**Why:** Teams of agents generating assets independently need one source
+of truth for cohesion (root policy) plus engine-appropriate constraints
+(game vs. app/web), a hard schema gate so briefs can't skip structured
+fields, and an explicit statement that external skills (e.g. Impeccable)
+don't bypass the local style/asset contracts — otherwise assets drift.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** `docs/ART_STYLE.md` sections (pillars, palette,
+reference board) are still `TBD` placeholders — first real project using
+this template should fill them in and bump `style_profile_version` past
+`1.0.0` once populated.
+
+---
+
 ### 2026-08-20 — Lead — lead CLI wrapper
 **Did:** Added `tools/lead/lead.mjs`. The script detects whether the calling environment supports chatmodes (VS Code integrated terminal, GitHub Copilot Chat, Cursor) and routes to `.github/chatmodes/take-the-lead.chatmode.md` when they are available. When chatmodes are not supported it prints a textual lead brief — in-flight work, open blocker/major bugs from `docs/BUGS.md`, and aging open questions — so a human or agent can identify the next handoff without an interactive chatmode session. Updated `README.md` to document the new command under Lead orchestration.
 **Why:** Resolved the open question from the lead orchestration chatmode entry: add the wrapper only when chatmodes are supported; otherwise fall back gracefully rather than duplicating the full interactive flow in a script.

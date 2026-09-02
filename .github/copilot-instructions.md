@@ -22,6 +22,10 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
   marker in `docs/ARCHITECTURE.md`.
 - Asset keys always match the `key` field in `docs/ASSETS.md`. Never load a
   raw file path directly in product code.
+- All generated or commissioned assets must satisfy `docs/ART_STYLE.md`
+  (root art-direction policy) plus the active engine's
+  `engines/<engine>/ART_STYLE.md` overlay — including assets produced by
+  external skills/agents outside `tools/asset-gen/`.
 
 ## Agent model routing defaults
 - Lead/coordinator work defaults to `gpt-5.6-sol` with `reasoning_effort: high`.
@@ -41,6 +45,8 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
 - `docs/SPEC.md` — the product spec: what it is and how it works
 - `docs/ARCHITECTURE.md` — how the codebase is organized
 - `docs/ASSETS.md` — asset manifest and generation status
+- `docs/ART_STYLE.md` — art-direction policy every asset must satisfy
+  (plus `engines/<engine>/ART_STYLE.md` for engine-specific constraints)
 - `docs/SQUAD.md` — team roster and how agents coordinate
 - `docs/EVAL.md` — effectiveness rubric and retro cadence
 - `docs/BUGS.md` — defect tracker (QA files and verifies)

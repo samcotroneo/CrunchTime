@@ -14,6 +14,8 @@ engines/<name>/
   SPEC.md           template stamped into docs/SPEC.md by project init (optional; falls back to generic)
   SQUAD.md          template stamped into docs/SQUAD.md by project init (domain-specific role names)
   conventions.md    stack + coding conventions for this engine (linked from AGENTS.md)
+  ART_STYLE.md      art-direction overlay for this engine (linked from docs/ART_STYLE.md);
+                     narrows the root policy for game vs. app/web constraints
 ```
 
 `ARCHITECTURE.md` templates must include an `<!-- engine: <name> -->` marker
@@ -61,5 +63,9 @@ enrich it with further research after init.
 2. Edit `pack.json`, `ARCHITECTURE.md`, `SPEC.md`, and `conventions.md` for the engine.
 3. Add `engineExpertQuestions` to `pack.json` (optional but recommended) and
    add a `## Engine notes` section to `ARCHITECTURE.md`.
-4. Nothing else to wire up — `tools/project-init/init-project.mjs` discovers
+4. Add `ART_STYLE.md` narrowing `docs/ART_STYLE.md` for this engine's domain
+   (game engines: camera/sprites/tilesets/world readability; app/web
+   engines: visual system/typography/spacing/tokens/iconography/
+   accessibility).
+5. Nothing else to wire up — `tools/project-init/init-project.mjs` discovers
    packs by scanning this directory.

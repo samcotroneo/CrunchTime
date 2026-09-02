@@ -8,12 +8,12 @@ and how work moves between agents.
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/SPEC.md`, feature/screen specs | Build Engineer |
+| Designer | `docs/SPEC.md`, feature/screen specs, `docs/ART_STYLE.md` root policy + `engines/<engine>/ART_STYLE.md` overlay, approval of any style profile change | Build Engineer |
 | Engine Expert | `docs/ARCHITECTURE.md` §Engine notes (one-shot at init) | Designer, Build Engineer |
 | App Engineer | `src/` implementation | — |
-| Build Engineer | Build config, native sync, `tools/asset-gen/`, releases | Designer, Engine Expert |
+| Build Engineer | Build config, native sync, asset generation tooling (`tools/asset-gen/`), packing/import pipeline, `docs/ASSETS.md` schema + CI checks, releases | Designer, Engine Expert |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | Device testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
+| QA | Device testing, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits, conformance of generated/commissioned assets to `docs/ART_STYLE.md` | — |
 
 ## Coordination rules
 
@@ -32,6 +32,10 @@ and how work moves between agents.
    `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
 7. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
+8. Changes to `docs/ART_STYLE.md` (or its `style_profile_version`) require
+   Designer sign-off logged in `docs/TASKS.md` before any agent briefs new
+   assets against the new version — see `docs/ART_STYLE.md` for the
+   approval gate and `docs/ASSETS.md` for how briefs pin a version.
 
 ## Handoff protocol
 
@@ -47,6 +51,7 @@ files:
 ## Access policy
 
 - Designer, QA: read-only on `src/`. QA also writes `docs/BUGS.md`.
+- Designer: read/write on `docs/ART_STYLE.md` and `engines/<engine>/ART_STYLE.md`.
 - Engine Expert: read-only on `src/`; writes only `docs/ARCHITECTURE.md`.
 - App Engineer: read/write on `src/`, no access to `tools/asset-gen/`.
 - Build Engineer: read/write on `tools/`, build config, `docs/ASSETS.md`,

@@ -220,8 +220,8 @@ versioning, a checklist gated on bug status, and
 
 ## Adding a new engine
 Copy an existing folder in `engines/`, edit its `pack.json`,
-`ARCHITECTURE.md`, and `conventions.md`. The init flow discovers packs
-automatically — see `engines/README.md`.
+`ARCHITECTURE.md`, `conventions.md`, and `ART_STYLE.md`. The init flow
+discovers packs automatically — see `engines/README.md`.
 
 ## Adding audio generation later
 Copy `tools/asset-gen/providers/_template.mjs` to `providers/<name>.mjs`,
@@ -235,6 +235,19 @@ else needs to change.
   references.
 - The generator writes provenance sidecars (`<asset>.meta.json`) for
   reproducibility and audit trails.
+
+## Art direction & asset cohesion
+`docs/ART_STYLE.md` is the canonical, versioned art-direction policy every
+asset must satisfy — engine-agnostic (palette, shape language, reference
+board, style profile version). Each engine pack narrows it with
+`engines/<engine>/ART_STYLE.md` (camera/sprites/tilesets for game engines;
+visual system/typography/tokens/iconography/accessibility for app/web
+engines). Every `needs-generation` entry in `docs/ASSETS.md` pins
+`style_profile_version`/`style_profile_ref`, and this applies equally to
+assets produced by external skills/agents (e.g. Impeccable) — outputs from
+outside `tools/asset-gen/` must still satisfy the local `ART_STYLE`/
+`ASSETS` contracts before being marked `final`. Designer owns this policy
+and approves any version change (see `docs/SQUAD.md`).
 
 ## A note on Copilot's agent file format
 This scaffold uses `.github/chatmodes/*.chatmode.md`. Some Copilot
