@@ -70,6 +70,20 @@ this template should fill them in and bump `style_profile_version` past
 
 ---
 
+### 2026-08-20 — Lead — custom-agent migration
+**Did:** Replaced the four `.github/chatmodes/*.chatmode.md` workflows with
+`.github/agents/*.agent.md` custom-agent profiles using current tool aliases,
+explicit read access, display names, and picker hints. Updated the README,
+squad templates, evaluation guidance, and lead CLI wrapper to point to custom
+agents and the documented Copilot CLI `/agent` and `--agent` invocation forms.
+**Why:** GitHub Copilot CLI and current VS Code guidance use repository custom
+agents in `.github/agents`; chatmodes are a legacy format and should no longer
+be the scaffold's primary workflow surface.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
 ### 2026-08-20 — Lead — lead CLI wrapper
 **Did:** Added `tools/lead/lead.mjs`. The script detects whether the calling environment supports chatmodes (VS Code integrated terminal, GitHub Copilot Chat, Cursor) and routes to `.github/chatmodes/take-the-lead.chatmode.md` when they are available. When chatmodes are not supported it prints a textual lead brief — in-flight work, open blocker/major bugs from `docs/BUGS.md`, and aging open questions — so a human or agent can identify the next handoff without an interactive chatmode session. Updated `README.md` to document the new command under Lead orchestration.
 **Why:** Resolved the open question from the lead orchestration chatmode entry: add the wrapper only when chatmodes are supported; otherwise fall back gracefully rather than duplicating the full interactive flow in a script.

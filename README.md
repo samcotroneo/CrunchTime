@@ -55,8 +55,9 @@ After getting a copy, run these three steps:
 2. **`node tools/project-init/init-project.mjs`** — staged questionnaire
    that picks your engine pack (Phaser, Capacitor, React Native, Godot, …)
    and seeds `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/ASSETS.md`, and
-   `docs/TASKS.md`. Chat-first alternative:
-   `.github/chatmodes/project-init.chatmode.md`. Re-running it later
+   `docs/TASKS.md`. Interactive alternative:
+   `.github/agents/project-init.agent.md` (enter `/agent` and select
+   **Project Init** in Copilot CLI). Re-running it later
    refines the brief; switching engines restamps `docs/ARCHITECTURE.md`.
 
 3. *(Optional)* **Asset generation** — if you'll generate assets, add your
@@ -119,7 +120,8 @@ engine-expert questions from your existing code.
 
 ### Step 3 — archaeology pass
 
-Run the **retrofit chatmode** (`.github/chatmodes/retrofit.chatmode.md`).
+Run the **retrofit custom agent** (`.github/agents/retrofit.agent.md`; enter
+`/agent` and select **Retrofit** in Copilot CLI).
 This is an Engine Expert sweep of your existing source that:
 
 - fills `docs/ARCHITECTURE.md §Engine notes` with what is actually
@@ -131,14 +133,14 @@ This is an Engine Expert sweep of your existing source that:
 - files any spotted defects in `docs/BUGS.md`
 
 The key difference from a green-field init: the questionnaire *describes*
-what exists; the retrofit chatmode *discovers* implementation details the
+what exists; the retrofit custom agent *discovers* implementation details the
 questionnaire cannot infer; and you manually review doc statuses to
 distinguish `implemented` from `ready` from `draft`.
 
 ## Keeping up to date
 
 When CrunchTime ships scaffold improvements (new engine packs, tooling fixes,
-chatmode updates), pull them into your project repo without overwriting your
+custom-agent updates), pull them into your project repo without overwriting your
 product code.
 
 ### Projects created from Option C (plain clone with `upstream` remote)
@@ -185,22 +187,23 @@ always gates QA, everyone logs handoffs in `docs/TASKS.md`.
 `docs/EVAL.md` defines the effectiveness rubric (rework rate, review
 cycles, open-question aging, throughput, scope drift). The handoff log
 carries the data — run `node tools/retro/retro.mjs` for the scorecard, or
-use `.github/chatmodes/retro.chatmode.md` for a guided retro that turns
-findings into convention changes.
+use `.github/agents/retro.agent.md` (enter `/agent` and select **Retro** in
+Copilot CLI) for a guided retro that turns findings into convention changes.
 
 ## Lead orchestration
-Use `.github/chatmodes/take-the-lead.chatmode.md` when you want the Lead to
+Use `.github/agents/take-the-lead.agent.md` (enter `/agent` and select **Take
+the Lead** in Copilot CLI) when you want the Lead to
 assess the current milestone, route the squad by lane, and propose the next
 handoffs in `docs/TASKS.md`. Good trigger phrases include “take the lead” and
-“it’s crunch time”. For lower AI-credit usage, keep it chatmode-first: let
+“it’s crunch time”. For lower AI-credit usage, keep it custom-agent-first: let
 Lead route the next one or two handoffs, reuse the docs as shared state, and
 avoid spawning extra worker sessions unless the work is truly independent.
 
-`node tools/lead/lead.mjs` is a lightweight CLI companion. It detects whether
-your environment supports chatmodes and routes you to the chatmode if it does.
-When chatmodes are not available it prints a textual lead brief — in-flight
-work, open blockers from `docs/BUGS.md`, and aging open questions — so you can
-start the next handoff without an interactive session.
+`node tools/lead/lead.mjs` is a lightweight CLI companion. It checks whether
+the custom-agent profile exists and points you to it. When an interactive agent
+host is not available it prints a textual lead brief — in-flight work, open
+blockers from `docs/BUGS.md`, and aging open questions — so you can start the
+next handoff without an interactive agent session.
 
 ### Default model policy (cost-oriented)
 - Lead/coordinator work: `gpt-5.6-sol` with high reasoning effort.
@@ -254,9 +257,13 @@ outputs from outside `tools/asset-gen/` must still satisfy the local
 `ART_STYLE`/`ASSETS` contracts before being marked `final`. Designer owns
 this policy and approves any version change (see `docs/SQUAD.md`).
 
-## A note on Copilot's agent file format
-This scaffold uses `.github/chatmodes/*.chatmode.md`. Some Copilot
-surfaces (e.g. Visual Studio's custom agents) instead expect
-`.github/agents/*.agent.md` with similar content — this convention is
-still evolving, so check current GitHub/VS Code/Visual Studio docs if a
-file isn't picked up on your setup.
+## Copilot custom agents
+Reusable workflows live in `.github/agents/*.agent.md`. This is the current
+custom-agent format supported by GitHub Copilot CLI, GitHub Copilot cloud agent,
+and VS Code. Older `.github/chatmodes/*.chatmode.md` files are not part of the
+scaffold; if a downstream project still has them, migrate the frontmatter
+tools to the current aliases (`read`, `edit`, `search`, `execute`) and move
+the Markdown body into an `.agent.md` profile. Restart Copilot CLI after adding
+or changing profiles so it reloads the agent catalog. For non-interactive CLI
+use, pass the profile name without the extension:
+`copilot --agent take-the-lead --prompt "Assess the current milestone."`
