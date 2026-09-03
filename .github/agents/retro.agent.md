@@ -1,9 +1,12 @@
 ---
+name: Retro
 description: Guided retrospective that scores team effectiveness from docs/TASKS.md and turns findings into concrete convention changes.
+argument-hint: Run a retrospective against docs/TASKS.md
 tools:
-  - editFiles
+  - read
+  - edit
   - search
-  - runCommands
+  - execute
 ---
 
 # Retro

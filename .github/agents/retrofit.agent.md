@@ -1,9 +1,12 @@
 ---
+name: Retrofit
 description: Archaeology pass for onboarding an existing project into CrunchTime. Reads the live codebase and seeds docs/ from what is already built.
+argument-hint: Onboard an existing project from its current source
 tools:
-  - editFiles
+  - read
+  - edit
   - search
-  - runCommands
+  - execute
 ---
 
 # Retrofit — Onboard an Existing Project
@@ -13,16 +16,16 @@ onboarded into CrunchTime. Your job is to read the live codebase and populate
 the CrunchTime docs so that every future agent starts with accurate, up-to-date
 context rather than blank placeholders.
 
-This chatmode works for **any engine or language** — Capacitor, React Native,
-Phaser, Godot, a Python backend, a Rust CLI, a plain HTML site, or any other
-stack. It does not assume a particular directory layout, package manager, or
-runtime. All investigation starts from what is actually present in the
-repository.
+This custom agent works for **any engine or language** — Capacitor, React
+Native, Phaser, Godot, a Python backend, a Rust CLI, a plain HTML site, or any
+other stack. It does not assume a particular directory layout, package
+manager, or runtime. All investigation starts from what is actually present
+in the repository.
 
-## When to use this chatmode
+## When to use this custom agent
 
-Use this chatmode **after** running `node tools/project-init/init-project.mjs`
-(or the `project-init` chatmode) on a project that already has working code.
+Use this custom agent **after** running `node tools/project-init/init-project.mjs`
+(or the `project-init` custom agent) on a project that already has working code.
 The init pass seeds the doc structure; this pass fills it in from the source.
 
 ## Your mandate
@@ -120,7 +123,8 @@ accurate.** Replace placeholders and `TBD` values with what you found.
   exist and explain the layout.
 - `## App / screen flow` — describe the top-level units of functionality and
   how a user or caller moves between them (screens, pages, scenes, commands,
-  API routes, etc.). Mark anything **in-progress** or **planned but not yet built**.
+  API routes, etc.). Mark anything **in-progress** or **planned but not yet
+  built**.
 - `## State management` — describe how state or data is managed and persisted.
   Write `N/A` if the project type has no meaningful state (e.g. a static site
   or a pure library).
@@ -168,7 +172,7 @@ Append one entry that summarises the retrofit pass:
 
 ```
 ## Retrofit archaeology pass — <date>
-Agent: Engine Expert (retrofit chatmode)
+Agent: Engine Expert (retrofit custom agent)
 
 ### What was found
 <bullet list of key findings>
@@ -195,8 +199,6 @@ the source, file them in `docs/BUGS.md` with:
   `P3` (cosmetic)
 - `status` — `open`
 - `description` — what is broken and where in the code
-
----
 
 ## Writing rules
 

@@ -1,9 +1,12 @@
 ---
+name: Take the Lead
 description: Lead the squad through the current milestone by assessing project state, routing the next handoffs, and enforcing team rules.
+argument-hint: Assess project state and route the next handoff
 tools:
-  - editFiles
+  - read
+  - edit
   - search
-  - runCommands
+  - execute
 ---
 
 # Take the Lead
@@ -44,15 +47,15 @@ Read these files before proposing work:
 - Respect access boundaries in `docs/SQUAD.md`.
 - Default to one Lead session plus one worker at a time. Do not spawn extra
   agents unless the work is truly independent.
-- Prefer this chatmode over command wrappers or extra automation unless a
+- Prefer this custom agent over command wrappers or extra automation unless a
   repeated workflow proves the extra surface is worth it.
 - Keep worker tasks narrowly scoped to one file area or one milestone slice.
 - Reuse the docs as persistent state instead of re-explaining the whole
   project in every follow-up.
 - Designer and Build Engineer may run in parallel only when their work does
   not violate other coordination rules.
-- Prefer direct search/read/edit in the current session for small tasks rather
-  than delegating them to another agent.
+- Prefer direct search/read/edit in the current session for small tasks
+  rather than delegating them to another agent.
 - Product Engineer only starts once the relevant SPEC section is marked
   `ready`.
 - Reviewer always gates QA.

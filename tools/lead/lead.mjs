@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-// Lead wrapper: routes to the take-the-lead chatmode when the calling
-// environment supports chatmodes, or prints a textual lead brief otherwise.
+// Lead wrapper: points to the Take the Lead custom agent when its profile is
+// available, or prints a textual lead brief otherwise.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
@@ -10,32 +10,16 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ---------------------------------------------------------------------------
-// Chatmode support detection
+// Custom-agent profile detection
 // ---------------------------------------------------------------------------
 
 /**
- * Returns true when the calling environment is likely chatmode-capable.
- *
- * Heuristics (any one is sufficient):
- *   1. GITHUB_COPILOT_CHATMODE env var is set (GitHub Copilot Chat).
- *   2. VSCODE_PID or CURSOR_SESSION_ID env var is set (VS Code / Cursor).
- *   3. The script is NOT attached to a TTY, meaning it was invoked from an
- *      editor terminal that typically runs agent tooling with chatmode support.
- *
- * If the `.github/chatmodes/take-the-lead.chatmode.md` file does not exist
- * the function always returns false regardless of the above.
+ * Returns true when the repository contains the Take the Lead custom-agent
+ * profile. The interactive host determines whether the profile can be
+ * selected; the CLI companion must not guess that from environment variables.
  */
-function chatmodesSupported(repoRoot) {
-  const chatmodePath = join(repoRoot, '.github', 'chatmodes', 'take-the-lead.chatmode.md');
-  if (!existsSync(chatmodePath)) return false;
-
-  const env = process.env;
-  if (env.GITHUB_COPILOT_CHATMODE) return true;
-  if (env.VSCODE_PID || env.CURSOR_SESSION_ID) return true;
-  // TERM_PROGRAM is set by VS Code's integrated terminal
-  if (env.TERM_PROGRAM === 'vscode') return true;
-
-  return false;
+function customAgentAvailable(repoRoot) {
+  return existsSync(join(repoRoot, '.github', 'agents', 'take-the-lead.agent.md'));
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +105,7 @@ function printBrief(repoRoot) {
   }).slice(0, 5);
 
   // --- Print ---
-  console.log('=== Lead brief (chatmode unavailable — run take-the-lead.chatmode.md for full flow) ===\n');
+  console.log('=== Lead brief (interactive custom agent unavailable) ===\n');
 
   if (blockers.length) {
     console.log('Blockers / major open bugs:');
@@ -150,10 +134,10 @@ function printBrief(repoRoot) {
     console.log('');
   }
 
-  const chatmodePath = join(repoRoot, '.github', 'chatmodes', 'take-the-lead.chatmode.md');
-  if (existsSync(chatmodePath)) {
-    console.log(`Tip: open .github/chatmodes/take-the-lead.chatmode.md in your IDE for the full\n` +
-                `     interactive Lead flow with chatmode support.`);
+  const agentPath = join(repoRoot, '.github', 'agents', 'take-the-lead.agent.md');
+  if (existsSync(agentPath)) {
+    console.log(`Tip: enter /agent and select "Take the Lead" in Copilot CLI, or\n` +
+                `     run copilot --agent take-the-lead --prompt "Assess the milestone."`);
   }
 }
 
@@ -166,7 +150,7 @@ function main() {
   if (argv.includes('--help') || argv.includes('-h')) {
     console.log('Usage: node tools/lead/lead.mjs [--repo-root <path>]');
     console.log('');
-    console.log('Routes to the take-the-lead chatmode when the environment supports it,');
+    console.log('Points to the Take the Lead custom agent when its profile exists,');
     console.log('or prints a textual lead brief (in-flight work, blockers, aging questions).');
     return;
   }
@@ -176,12 +160,10 @@ function main() {
     ? resolve(argv[rootIndex + 1])
     : resolve(__dirname, '..', '..');
 
-  if (chatmodesSupported(repoRoot)) {
-    const chatmodePath = join(repoRoot, '.github', 'chatmodes', 'take-the-lead.chatmode.md');
-    console.log('Chatmodes are supported in this environment.');
-    console.log(`Open: ${chatmodePath}`);
-    console.log('');
-    console.log('Or use your IDE\'s chatmode picker and select "Take the Lead".');
+  if (customAgentAvailable(repoRoot)) {
+    console.log('Take the Lead custom-agent profile found.');
+    console.log('Enter /agent and select "Take the Lead", or run');
+    console.log('copilot --agent take-the-lead --prompt "Assess the milestone."');
   } else {
     printBrief(repoRoot);
   }

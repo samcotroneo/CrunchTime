@@ -28,8 +28,9 @@ and how work moves between agents.
    signed off in `docs/TASKS.md`.
 5. QA is always last in a feature's lifecycle, never parallel to Engineer
    on the same feature.
-6. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
-   `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
+6. Lead runs retros at the cadence defined in `docs/EVAL.md` — via the
+   `retro` custom agent in `.github/agents/retro.agent.md` or
+   `node tools/retro/retro.mjs`.
 7. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
 
@@ -54,7 +55,7 @@ files:
 - Reviewer: read-only on code, writes only to `docs/TASKS.md`.
 - Lead: read everywhere, writes only to `docs/TASKS.md`.
 
-Each agent's `tools:` field (in `.claude/agents/` or `.github/chatmodes/`)
+Each custom agent's `tools:` field (in `.claude/agents/` or `.github/agents/`)
 should reflect this table. For stricter path-level enforcement, check your
 tool's current permissions/settings docs — this table is the policy those
 settings should implement.

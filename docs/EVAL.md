@@ -40,8 +40,8 @@ active development — whichever comes first.
 
 ## How a retro runs
 
-1. Lead runs `node tools/retro/retro.mjs` for the scorecard (or the retro
-   chatmode, which does this as Stage 1).
+1. Lead runs `node tools/retro/retro.mjs` for the scorecard (or the `retro`
+   custom agent, which does this as Stage 1).
 2. Compare each metric against targets. Investigate the worst offender
    first — read the actual TASKS.md entries behind the number.
 3. Decide on at most 2–3 concrete changes. Changes land in `AGENTS.md`
