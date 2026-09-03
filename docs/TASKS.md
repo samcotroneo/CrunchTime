@@ -19,6 +19,24 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-09-02 — Build Engineer — media asset contracts and enforcement
+**Did:** Separated asset generation into `image`, `audio`, and `video` contracts;
+added category-specific briefs, output fields, provider routing, style-profile
+pins, provenance digests, final-output checks, shared manifest validation, and
+CI enforcement. Updated project init to preserve structured and unknown asset
+fields, derive current profile versions, validate engine overlays, and restamp
+engine SQUAD/style docs when switching engines. Added concrete baseline art
+direction plus audio/video overlays and release-checklist gates.
+**Why:** Independent image, audio, and video work needs enforceable contracts
+that preserve cohesion without applying visual-only requirements to non-visual
+media, and engine switches must not silently discard asset metadata.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** Video provider implementation remains an extension point.
+
+---
+
 ### 2026-09-02 — Designer — layered art-direction policy
 **Did:** Added a canonical, versioned `docs/ART_STYLE.md` (engine-agnostic
 cohesion policy: visual pillars, shape language, color system, materials,

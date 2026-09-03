@@ -6,6 +6,9 @@ Godot 4 project. Owned by: Designer. Does not restate the root policy;
 only adds/constrains where a Godot project needs concrete rules the root
 doc can't assume.
 
+## style_profile_version
+`1.0.0`
+
 ## Camera
 - Fix the camera mode (2D top-down, 2D side-scroller, isometric, or 3D
   perspective/orthographic) once here and keep every scene consistent
@@ -37,6 +40,16 @@ doc can't assume.
   consistent rim-light/outline treatment for interactables only.
 - HUD/UI art follows the shared color system but must stay legible over
   any in-game background.
+
+## Audio direction
+- Audio assets must support the game's intended pace and mood without
+  masking gameplay feedback; brief loop points and loudness targets
+  explicitly.
+
+## Motion / video
+- Video captures use the same camera, palette, silhouette, and world
+  readability rules as gameplay, with timing that does not obscure the
+  intended action.
 
 ## Applies on top of
 `docs/ART_STYLE.md` (root policy, cohesion rules, style profile version,

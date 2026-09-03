@@ -1,7 +1,8 @@
 # Art Style Policy
 
 Owned by: Designer (authoritative — see `docs/SQUAD.md`). This is the
-engine-agnostic baseline every generated or commissioned asset must satisfy.
+engine-agnostic baseline every generated or commissioned image, audio, or
+video asset must satisfy.
 Engine packs add a more specific overlay on top of this file — see
 `## Engine overlays` below. This file (plus the current engine overlay) is
 what makes a set of independently generated assets look like they belong to
@@ -12,7 +13,7 @@ approval gate: no other agent may bump the version or redefine a section
 without Designer sign-off logged in `docs/TASKS.md`.
 
 ## style_profile_version
-`1.0.0`
+`1.1.0`
 
 Bump this (semver) whenever a section below changes meaning, not just
 wording. `docs/ASSETS.md` entries pin the version they were briefed against
@@ -20,30 +21,56 @@ via `style_profile_version`, so QA can flag assets generated against a
 stale profile.
 
 ## Visual pillars
-TBD — 2-4 short phrases describing tone, genre/category, and target
-audience. Every other section should trace back to these.
+- Calm, focused utility with friendly confidence.
+- Clear at a glance, with purposeful emphasis and low visual noise.
+- Inclusive and accessible across small screens and gameplay distances.
 
 ## Shape language
-TBD — round vs. angular, silhouette rules, level of geometric detail.
+- Prefer simple geometric silhouettes with intentional negative space.
+- Use softly rounded UI corners (8px baseline) and consistent 2px visual
+  strokes where outlines are needed.
+- Avoid gratuitous bevels, ornamental micro-detail, and ambiguous silhouettes.
 
 ## Color system
-TBD — primary/secondary/accent palette (name or hex references), and any
-explicitly forbidden colors or combinations.
+- Ink: `#172033`; surface: `#F8FAFC`; muted surface: `#E2E8F0`.
+- Primary: `#4F46E5`; secondary: `#0F766E`; success: `#15803D`;
+  warning: `#B45309`; danger: `#B91C1C`.
+- Use semantic colors with WCAG AA contrast. Do not use neon saturation,
+  red/green-only state pairs, or low-contrast muted text for essential data.
 
 ## Material / lighting / rendering
-TBD — roughness, lighting direction, bloom/rim-light or flat-shading
-conventions, line weight, texture density. Applies to both art and any
-motion/video output.
+- Default to matte, flat, or lightly textured surfaces with restrained
+  depth; avoid photorealism and glossy plastic.
+- Use a consistent upper-left light direction for dimensional art, with
+  soft shadows and no unmotivated bloom or lens effects.
+- Keep texture density low enough that silhouettes and semantic details
+  survive target-size rendering. Apply the same restraint to video.
 
 ## Reference board
-TBD — links or paths to 10-20 pinned reference assets that define the
-target look, plus 3-5 anti-references (what this project should *not*
-look like) and, once available, one "hero" asset that best represents the
-final style.
+Baseline anchors: accessible flat-product iconography, matte geometric
+illustration, restrained editorial motion, and readable game silhouettes.
+Each initialized project must replace these anchors with 10-20 pinned
+reference paths, 3-5 anti-references, and one approved hero asset before
+its first production release.
 
 ## Do / Don't
-TBD — a short bullet list of concrete do/don't examples, updated as the
-team learns what breaks cohesion in practice.
+- Do preserve whitespace, silhouette clarity, semantic color meaning, and
+  consistent light/stroke treatment.
+- Do not add text, logos, watermarks, noisy gradients, or decorative detail
+  that competes with the primary action unless the brief explicitly calls
+  for it.
+
+## Media contracts
+`docs/ASSETS.md` separates media by category:
+- `image` follows visual pillars, shape language, color, rendering, and the
+  active engine overlay.
+- `audio` follows the product tone plus sonic style, pacing, looping, and
+  export requirements; visual-only fields do not apply.
+- `video` follows the image rules plus camera, timeline, motion continuity,
+  frame rate, duration, and export requirements.
+
+The category-specific contract is authoritative for required fields. Do not
+invent visual constraints for audio or omit timing constraints from video.
 
 ## Engine overlays
 Game vs. app/web products need different concrete constraints on top of
@@ -56,12 +83,14 @@ is stamped in). The overlay must not contradict this file — it narrows and
 specializes it.
 
 ## External skills / agents
-Outputs produced by external skills or agents (image/video/audio
+Outputs produced by external skills or agents (image/audio/video
 generation assistants, style-transfer tools, or any third-party pipeline
 not defined in `tools/asset-gen/`) are **not exempt** from this policy.
 Before an externally produced asset is accepted into `docs/ASSETS.md` as
 `final`, it must still satisfy:
-- this file's visual pillars, palette, and reference board, and
+- this file's category-appropriate direction (visual pillars, palette, and
+  reference board for image/video; product tone, sonic direction, and
+  approved sonic references named in the brief for audio), and
 - the active engine's `ART_STYLE.md` overlay, and
 - the structured schema and output contract in `docs/ASSETS.md`.
 
@@ -73,9 +102,10 @@ exception.
 ## Validation checklist (per asset, before marking `final`)
 - [ ] Matches `style_profile_version` recorded on the asset entry, or the
       entry has been re-briefed against the current version.
-- [ ] Consistent with the reference board (no unexplained deviation).
-- [ ] Palette matches the color system (or a documented, Designer-approved
-      exception).
+- [ ] Image/video assets are consistent with the reference board and color
+      system (or have a documented, Designer-approved exception).
+- [ ] Audio assets match the approved sonic direction and do not inherit
+      visual-only requirements.
 - [ ] Respects the active engine overlay's constraints
       (`engines/<engine>/ART_STYLE.md`).
 - [ ] No forbidden elements (text/watermarks/logos unless the brief

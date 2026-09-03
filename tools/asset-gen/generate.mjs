@@ -7,12 +7,20 @@
 import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, resolve } from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
-const DEFAULT_MANIFEST = resolve(new URL('../../docs/ASSETS.md', import.meta.url).pathname);
+const DEFAULT_MANIFEST = fileURLToPath(new URL('../../docs/ASSETS.md', import.meta.url));
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_TIMEOUT_MS = 90_000;
-const VALID_CATEGORIES = new Set(['art', 'audio']);
+const VALID_CATEGORIES = new Set(['image', 'audio', 'video']);
+const CATEGORY_ALIASES = new Map([['art', 'image']]);
 const VALID_STATUSES = new Set(['needs-generation', 'placeholder', 'final']);
+const VALID_SOURCES = new Set(['kenney.nl (CC0)', 'commissioned', 'generated', 'placeholder']);
+const VALID_TYPES = {
+  image: new Set(['spritesheet', 'atlas', 'icon', 'illustration', 'texture']),
+  audio: new Set(['sfx', 'music', 'loop']),
+  video: new Set(['clip', 'loop', 'cutscene', 'background']),
+};
 const KEY_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 const NONE = 'none';
 
@@ -121,8 +129,8 @@ function parseMaxRetries(args) {
 
 function normalizeAssetFromManifest(asset, manifestPath) {
   const f = asset.fields;
-  const legacyPrompt = f.generation && f.generation.toLowerCase() !== NONE ? f.generation : '';
-  const category = (f.category || '').toLowerCase();
+  const rawCategory = (f.category || '').toLowerCase();
+  const category = CATEGORY_ALIASES.get(rawCategory) || rawCategory;
 
   return {
     mode: 'manifest',
@@ -131,6 +139,11 @@ function normalizeAssetFromManifest(asset, manifestPath) {
     type: f.type || '',
     status: (f.status || '').toLowerCase(),
     source: f.source || '',
+    sourceTool: f.source_tool || '',
+    styleProfileVersion: f.style_profile_version || '',
+    engineStyleProfileVersion: f.engine_style_profile_version || '',
+    styleProfileRef: f.style_profile_ref || '',
+    engineStyleProfileRef: f.engine_style_profile_ref || '',
     outputPath: f.output_path ? resolve(dirname(manifestPath), f.output_path) : '',
     brief: {
       style: f.brief_style || '',
@@ -140,13 +153,20 @@ function normalizeAssetFromManifest(asset, manifestPath) {
       constraints: f.brief_constraints || '',
       negativeConstraints: f.brief_negative_constraints || '',
       outputSpec: f.brief_output_spec || '',
-      subject: f.brief_subject || legacyPrompt,
+      tempo: f.brief_tempo || '',
+      looping: f.brief_looping || '',
+      timeline: f.brief_timeline || '',
+      subject: f.brief_subject || '',
     },
     output: {
       format: (f.output_format || '').toLowerCase(),
       width: Number.parseInt(f.output_width || '', 10) || null,
       height: Number.parseInt(f.output_height || '', 10) || null,
       transparentBackground: normalizeBool(f.output_transparent_background, true),
+      fps: Number.parseInt(f.output_fps || '', 10) || null,
+      durationSeconds: Number.parseFloat(f.output_duration_seconds || '') || null,
+      sampleRate: Number.parseInt(f.output_sample_rate || '', 10) || null,
+      channels: Number.parseInt(f.output_channels || '', 10) || null,
     },
     referenceImages: csvToArray(f.reference_images).map((p) => resolve(dirname(manifestPath), p)),
     rawFields: f,
@@ -154,31 +174,46 @@ function normalizeAssetFromManifest(asset, manifestPath) {
 }
 
 function normalizeDebugAsset(args) {
+  const category = CATEGORY_ALIASES.get((args.category || '').toLowerCase()) || (args.category || '').toLowerCase();
   const width = Number.parseInt(args.width || '', 10) || null;
   const height = Number.parseInt(args.height || '', 10) || null;
   return {
     mode: 'debug',
     key: args.key,
-    category: (args.category || '').toLowerCase(),
-    type: '',
+    category,
+    type: category === 'image' ? 'illustration' : category === 'video' ? 'clip' : 'sfx',
     status: 'needs-generation',
-    source: 'debug',
+    source: 'generated',
+    sourceTool: 'debug',
     outputPath: resolve(args.out),
     brief: {
-      style: args['brief-style'] || 'cohesive game-ready style',
-      camera: args['brief-camera'] || 'centered gameplay framing',
-      palette: args['brief-palette'] || 'readable game palette',
-      mood: args['brief-mood'] || 'clear and readable',
-      constraints: args['brief-constraints'] || 'clean silhouette, no text',
+      style:
+        args['brief-style'] ||
+        (category === 'audio'
+          ? 'cohesive sonic style'
+          : category === 'video'
+            ? 'cohesive motion style'
+            : 'cohesive visual style'),
+      camera: args['brief-camera'] || 'centered framing',
+      palette: args['brief-palette'] || 'readable product palette',
+      mood: args['brief-mood'] || 'clear and purposeful',
+      constraints: args['brief-constraints'] || 'clean composition, no text',
       negativeConstraints: args['brief-negative-constraints'] || 'no watermark, no UI text',
-      outputSpec: args['brief-output-spec'] || 'single game-ready output',
+      outputSpec: args['brief-output-spec'] || 'single production-ready output',
+      tempo: args['brief-tempo'] || 'steady and unobtrusive',
+      looping: args['brief-looping'] || 'not required',
+      timeline: args['brief-timeline'] || 'clear beginning, middle, and end',
       subject: args.prompt || '',
     },
     output: {
       format: ((args.format || extname(args.out).slice(1) || 'png') + '').toLowerCase(),
-      width,
-      height,
+      width: width || (category === 'image' ? 1024 : category === 'video' ? 1920 : null),
+      height: height || (category === 'image' ? 1024 : category === 'video' ? 1080 : null),
       transparentBackground: normalizeBool(args.transparent, true),
+      fps: Number.parseInt(args.fps || '', 10) || (category === 'video' ? 24 : null),
+      durationSeconds: Number.parseFloat(args.duration || '') || (category === 'video' ? 5 : null),
+      sampleRate: Number.parseInt(args['sample-rate'] || '', 10) || null,
+      channels: Number.parseInt(args.channels || '', 10) || null,
     },
     referenceImages: csvToArray(args['reference-images']).map((p) => resolve(p)),
     rawFields: {},
@@ -191,19 +226,114 @@ function validateKey(key) {
   }
 }
 
-function validateAsset(asset) {
+function readStyleProfileVersion(content, path) {
+  const match = `${content ?? ''}`.match(/^## style_profile_version\s*\n+`([^`]+)`/m);
+  if (!match) {
+    throw new Error(`Missing style_profile_version in ${path}`);
+  }
+  return match[1].trim();
+}
+
+function loadStyleProfile(repoRoot, engineName = '') {
+  const rootPath = resolve(repoRoot, 'docs/ART_STYLE.md');
+  if (!existsSync(rootPath)) throw new Error(`style policy not found: ${rootPath}`);
+  const rootContent = readFileSync(rootPath, 'utf8');
+  const rootVersion = readStyleProfileVersion(rootContent, rootPath);
+  const normalizedEngine = `${engineName ?? ''}`.trim().toLowerCase();
+  if (!normalizedEngine) {
+    return {
+      engine: '',
+      rootPath,
+      rootContent,
+      rootVersion,
+      enginePath: '',
+      engineContent: '',
+      engineVersion: '',
+      digest: crypto.createHash('sha256').update(rootContent).digest('hex'),
+    };
+  }
+
+  const enginePath = resolve(repoRoot, 'engines', normalizedEngine, 'ART_STYLE.md');
+  if (!existsSync(enginePath)) throw new Error(`engine art-style overlay not found: ${enginePath}`);
+  const engineContent = readFileSync(enginePath, 'utf8');
+  const engineVersion = readStyleProfileVersion(engineContent, enginePath);
+  const digest = crypto
+    .createHash('sha256')
+    .update(rootContent)
+    .update('\0')
+    .update(engineContent)
+    .digest('hex');
+
+  return {
+    engine: normalizedEngine,
+    rootPath,
+    rootContent,
+    rootVersion,
+    enginePath,
+    engineContent,
+    engineVersion,
+    digest,
+  };
+}
+
+function detectEngine(repoRoot, explicitEngine = '') {
+  if (`${explicitEngine ?? ''}`.trim()) return `${explicitEngine}`.trim().toLowerCase();
+  const architecturePath = resolve(repoRoot, 'docs/ARCHITECTURE.md');
+  if (!existsSync(architecturePath)) return '';
+  const match = readFileSync(architecturePath, 'utf8').match(/<!--\s*engine:\s*([a-z0-9-]+)\s*-->/i);
+  return match ? match[1].toLowerCase() : '';
+}
+
+function headingSlug(heading) {
+  return heading
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .replace(/\s+/g, '-');
+}
+
+function validateStyleProfileRef(ref, repoRoot, expectedRelativePath) {
+  const [relativePath, fragment] = `${ref ?? ''}`.split('#', 2);
+  if (!relativePath || !fragment) return 'style profile references must include a document and section';
+  if (relativePath !== expectedRelativePath) {
+    return `style profile reference must point to ${expectedRelativePath}`;
+  }
+
+  const path = resolve(repoRoot, relativePath);
+  if (!existsSync(path)) return `style profile reference document not found: ${relativePath}`;
+  const content = readFileSync(path, 'utf8');
+  const headings = [...content.matchAll(/^##\s+(.+)$/gm)].map((match) => headingSlug(match[1]));
+  if (!headings.includes(fragment.toLowerCase())) {
+    return `style profile section not found: ${ref}`;
+  }
+  return '';
+}
+
+function validateAsset(asset, styleProfile = null) {
   const errors = [];
 
   if (!asset.key) errors.push('missing key');
   if (!VALID_CATEGORIES.has(asset.category)) errors.push(`invalid category "${asset.category}"`);
+  if (!asset.status) errors.push('missing status');
   if (asset.status && !VALID_STATUSES.has(asset.status)) errors.push(`invalid status "${asset.status}"`);
+  if (asset.status === 'placeholder') return errors;
+  if (!asset.type) errors.push('missing type');
+  if (asset.type && VALID_TYPES[asset.category] && !VALID_TYPES[asset.category].has(asset.type)) {
+    errors.push(`invalid type "${asset.type}" for category "${asset.category}"`);
+  }
+  if (!asset.source) errors.push('missing source');
+  if (asset.source && !VALID_SOURCES.has(asset.source)) errors.push(`invalid source "${asset.source}"`);
+  if (['generated', 'commissioned'].includes(asset.source) && !asset.sourceTool) {
+    errors.push('missing source_tool for generated or commissioned asset');
+  }
   if (!asset.outputPath) errors.push('missing output_path');
-  if (!asset.brief.subject) errors.push('missing brief_subject (or legacy generation)');
+  if (!asset.brief.subject) errors.push('missing brief_subject');
+  if (asset.status === 'final' && asset.outputPath && !existsSync(asset.outputPath)) {
+    errors.push(`final output not found at ${asset.outputPath}`);
+  }
 
   const requiredBriefFields = [
     ['style', 'brief_style'],
-    ['camera', 'brief_camera'],
-    ['palette', 'brief_palette'],
     ['mood', 'brief_mood'],
     ['constraints', 'brief_constraints'],
     ['negativeConstraints', 'brief_negative_constraints'],
@@ -212,6 +342,75 @@ function validateAsset(asset) {
 
   for (const [field, label] of requiredBriefFields) {
     if (!asset.brief[field]) errors.push(`missing ${label}`);
+  }
+
+  if (asset.category === 'image' || asset.category === 'video') {
+    for (const [field, label] of [
+      ['camera', 'brief_camera'],
+      ['palette', 'brief_palette'],
+    ]) {
+      if (!asset.brief[field]) errors.push(`missing ${label}`);
+    }
+  }
+
+  if (asset.category === 'audio') {
+    for (const [field, label] of [
+      ['tempo', 'brief_tempo'],
+      ['looping', 'brief_looping'],
+    ]) {
+      if (!asset.brief[field]) errors.push(`missing ${label}`);
+    }
+  }
+
+  if (asset.category === 'video' && !asset.brief.timeline) {
+    errors.push('missing brief_timeline');
+  }
+
+  if (asset.category === 'image' && (!asset.output.width || !asset.output.height)) {
+    errors.push('image assets require output_width and output_height');
+  }
+  if (asset.category === 'video') {
+    if (!asset.output.width || !asset.output.height) errors.push('video assets require output_width and output_height');
+    if (!asset.output.fps || asset.output.fps <= 0) errors.push('video assets require output_fps');
+    if (!asset.output.durationSeconds || asset.output.durationSeconds <= 0) {
+      errors.push('video assets require output_duration_seconds');
+    }
+  }
+
+  if (styleProfile && asset.mode === 'manifest') {
+    if (!asset.styleProfileVersion) errors.push('missing style_profile_version');
+    if (asset.styleProfileVersion && asset.styleProfileVersion !== styleProfile.rootVersion) {
+      errors.push(`style_profile_version (${asset.styleProfileVersion}) does not match current profile (${styleProfile.rootVersion})`);
+    }
+    if (!asset.styleProfileRef) errors.push('missing style_profile_ref');
+    if (asset.styleProfileRef) {
+      const refError = validateStyleProfileRef(
+        asset.styleProfileRef,
+        dirname(dirname(styleProfile.rootPath)),
+        'docs/ART_STYLE.md'
+      );
+      if (refError) errors.push(refError);
+    }
+    if (styleProfile.engine) {
+      if (!asset.engineStyleProfileVersion) errors.push('missing engine_style_profile_version');
+      if (
+        asset.engineStyleProfileVersion &&
+        asset.engineStyleProfileVersion !== styleProfile.engineVersion
+      ) {
+        errors.push(
+          `engine_style_profile_version (${asset.engineStyleProfileVersion}) does not match current overlay (${styleProfile.engineVersion})`
+        );
+      }
+      if (!asset.engineStyleProfileRef) errors.push('missing engine_style_profile_ref');
+      if (asset.engineStyleProfileRef) {
+        const refError = validateStyleProfileRef(
+          asset.engineStyleProfileRef,
+          dirname(dirname(styleProfile.rootPath)),
+          `engines/${styleProfile.engine}/ART_STYLE.md`
+        );
+        if (refError) errors.push(refError);
+      }
+    }
   }
 
   if (!asset.output.format) errors.push('missing output_format');
@@ -239,36 +438,69 @@ function validateAsset(asset) {
   return errors;
 }
 
-function buildPromptLayers(asset) {
+function validateManifest(manifestPath, explicitEngine = '') {
+  const resolvedManifestPath = resolve(manifestPath);
+  if (!existsSync(resolvedManifestPath)) {
+    throw new Error(`manifest not found: ${resolvedManifestPath}`);
+  }
+
+  const repoRoot = resolve(dirname(resolvedManifestPath), '..');
+  const engine = detectEngine(repoRoot, explicitEngine);
+  const styleProfile = loadStyleProfile(repoRoot, engine);
+  const assets = parseAssetsManifest(readFileSync(resolvedManifestPath, 'utf8'))
+    .map((asset) => normalizeAssetFromManifest(asset, resolvedManifestPath))
+    .filter((asset) => ['needs-generation', 'final'].includes(asset.status));
+  const seenKeys = new Set();
+  const failures = assets.flatMap((asset) => {
+    const errors = validateAsset(asset, styleProfile);
+    if (seenKeys.has(asset.key)) errors.push('duplicate asset key');
+    seenKeys.add(asset.key);
+    return errors.map((error) => ({ key: asset.key, error }));
+  });
+  return { assets, failures, styleProfile };
+}
+
+function buildPromptLayers(asset, styleProfile = null) {
   const globalStyleGuide = [
-    'Game production asset for a cohesive set.',
-    'Preserve clean readability at gameplay scale.',
+    'Create a cohesive product asset that follows the supplied art-direction policy.',
     'Avoid text, logos, signatures, or watermarks.',
   ];
 
-  const categoryTemplate =
-    asset.category === 'art'
-      ? [
-          'Deliver game-ready visual art.',
-          'Transparent background when requested.',
-          'Prioritize silhouette clarity over detail noise.',
-        ]
-      : [
-          'Deliver game-ready audio.',
-          'Avoid clipping and harsh transients.',
-          'Keep loop boundaries clean when looped content is requested.',
-        ];
+  const categoryTemplate = {
+    image: [
+      'Deliver a production-ready image asset.',
+      'Transparent background when requested.',
+      'Prioritize clear composition and legibility at the target size.',
+    ],
+    audio: [
+      'Deliver a production-ready audio asset.',
+      'Avoid clipping and harsh transients.',
+      'Keep loop boundaries clean when looped content is requested.',
+    ],
+    video: [
+      'Deliver a production-ready video asset.',
+      'Keep motion, framing, and timing coherent throughout the clip.',
+      'Avoid embedded text, logos, signatures, or watermarks unless explicitly requested.',
+    ],
+  }[asset.category] || [];
 
   const briefLayer = [
     `Subject: ${asset.brief.subject}`,
     `Style: ${asset.brief.style}`,
-    `Camera/framing: ${asset.brief.camera}`,
-    `Palette/color treatment: ${asset.brief.palette}`,
     `Mood: ${asset.brief.mood}`,
     `Constraints: ${asset.brief.constraints}`,
     `Negative constraints: ${asset.brief.negativeConstraints}`,
     `Output spec: ${asset.brief.outputSpec}`,
   ];
+  if (asset.category === 'image' || asset.category === 'video') {
+    briefLayer.push(`Camera/framing: ${asset.brief.camera}`, `Palette/color treatment: ${asset.brief.palette}`);
+  }
+  if (asset.category === 'audio') {
+    briefLayer.push(`Tempo/pacing: ${asset.brief.tempo}`, `Looping: ${asset.brief.looping}`);
+  }
+  if (asset.category === 'video') {
+    briefLayer.push(`Timeline/motion: ${asset.brief.timeline}`);
+  }
 
   const referenceLayer = asset.referenceImages.length
     ? [`Reference images: ${asset.referenceImages.map((p) => basename(p)).join(', ')}`]
@@ -279,11 +511,30 @@ function buildPromptLayers(asset) {
     asset.output.width && asset.output.height
       ? `Target dimensions: ${asset.output.width}x${asset.output.height}`
       : 'Target dimensions: provider default',
-    `Transparent background: ${asset.output.transparentBackground ? 'yes' : 'no'}`,
   ];
+  if (asset.category === 'image' || asset.category === 'video') {
+    outputLayer.push(`Transparent background: ${asset.output.transparentBackground ? 'yes' : 'no'}`);
+  }
+  if (asset.category === 'video') {
+    outputLayer.push(`Frame rate: ${asset.output.fps} fps`, `Duration: ${asset.output.durationSeconds} seconds`);
+  }
+  if (asset.category === 'audio') {
+    if (asset.output.sampleRate) outputLayer.push(`Sample rate: ${asset.output.sampleRate} Hz`);
+    if (asset.output.channels) outputLayer.push(`Channels: ${asset.output.channels}`);
+  }
 
   return {
-    global: globalStyleGuide,
+    global: styleProfile
+      ? [
+          ...globalStyleGuide,
+          '',
+          `Root art-direction policy (${styleProfile.rootVersion}):`,
+          styleProfile.rootContent.trim(),
+          ...(styleProfile.engine
+            ? [`Engine overlay (${styleProfile.engine}, ${styleProfile.engineVersion}):`, styleProfile.engineContent.trim()]
+            : []),
+        ]
+      : globalStyleGuide,
     category: categoryTemplate,
     brief: briefLayer,
     references: referenceLayer,
@@ -334,7 +585,12 @@ function critiqueAttempt({ asset, qualityErrors }) {
 
   return {
     pass: findings.length === 0,
-    rubric: ['style match', 'readability', 'silhouette', 'constraints compliance'],
+    rubric:
+      asset.category === 'audio'
+        ? ['sonic style match', 'clarity', 'looping', 'constraints compliance']
+        : asset.category === 'video'
+          ? ['visual style match', 'readability', 'motion continuity', 'constraints compliance']
+          : ['style match', 'readability', 'composition', 'constraints compliance'],
     findings,
     correctionNotes,
   };
@@ -414,7 +670,17 @@ function validateOutput(asset, providerResult) {
   return errors;
 }
 
-function writeProvenance({ runId, asset, providerName, providerResult, promptLayers, prompt, attempts, critiqueHistory }) {
+function writeProvenance({
+  runId,
+  asset,
+  providerName,
+  providerResult,
+  promptLayers,
+  prompt,
+  attempts,
+  critiqueHistory,
+  styleProfile,
+}) {
   const meta = {
     runId,
     key: asset.key,
@@ -432,13 +698,30 @@ function writeProvenance({ runId, asset, providerName, providerResult, promptLay
     cost: providerResult.cost,
     attempts,
     critique: critiqueHistory,
+    styleProfile: styleProfile
+      ? {
+          rootVersion: styleProfile.rootVersion,
+          engine: styleProfile.engine || null,
+          engineVersion: styleProfile.engineVersion || null,
+          digest: styleProfile.digest,
+        }
+      : null,
   };
 
   writeFileSync(`${providerResult.outputPath}.meta.json`, JSON.stringify(meta, null, 2));
 }
 
-async function executeWithRetries({ provider, providerName, asset, dryRun, timeoutMs, maxRetries, runId }) {
-  const promptLayers = buildPromptLayers(asset);
+async function executeWithRetries({
+  provider,
+  providerName,
+  asset,
+  dryRun,
+  timeoutMs,
+  maxRetries,
+  runId,
+  styleProfile,
+}) {
+  const promptLayers = buildPromptLayers(asset, styleProfile);
   let correctionNotes = [];
   let attempt = 0;
   const critiqueHistory = [];
@@ -494,6 +777,7 @@ async function executeWithRetries({ provider, providerName, asset, dryRun, timeo
           prompt,
           attempts: attemptNumber,
           critiqueHistory,
+          styleProfile,
         });
       }
 
@@ -527,10 +811,11 @@ function printMigrationWarnings(assets) {
   if (!legacy.length) return;
 
   console.log('\n[migration] Legacy generation prompts detected. Add structured fields for each asset:');
-  console.log('  - brief_subject, brief_style, brief_camera, brief_palette, brief_mood');
-  console.log('  - brief_constraints, brief_negative_constraints, brief_output_spec');
-  console.log('  - output_path, output_format, output_width, output_height, output_transparent_background');
-  console.log('  - reference_images (comma-separated relative paths, optional)\n');
+  console.log('  - common: brief_subject, brief_style, brief_mood, brief_constraints, brief_negative_constraints, brief_output_spec');
+  console.log('  - image/video: brief_camera, brief_palette, output_width, output_height');
+  console.log('  - audio: brief_tempo, brief_looping');
+  console.log('  - video: brief_timeline, output_fps, output_duration_seconds');
+  console.log('  - all: output_path, output_format, style profile pins, reference_images (optional)\n');
 
   for (const asset of legacy) {
     console.log(`  * ${asset.key}`);
@@ -544,7 +829,16 @@ function summarizeCounts(results) {
   return { done, skipped, failed };
 }
 
-async function generateAsset({ provider, providerName, asset, dryRun, timeoutMs, maxRetries, runId }) {
+async function generateAsset({
+  provider,
+  providerName,
+  asset,
+  dryRun,
+  timeoutMs,
+  maxRetries,
+  runId,
+  styleProfile,
+}) {
   const record = {
     key: asset.key,
     category: asset.category,
@@ -562,6 +856,7 @@ async function generateAsset({ provider, providerName, asset, dryRun, timeoutMs,
       timeoutMs,
       maxRetries,
       runId,
+      styleProfile,
     });
 
     appendLog({
@@ -590,11 +885,19 @@ async function generateAsset({ provider, providerName, asset, dryRun, timeoutMs,
 }
 
 async function loadProvider(category) {
-  const providerEnvVar = category === 'art' ? 'ART_PROVIDER' : 'AUDIO_PROVIDER';
-  const providerName = process.env[providerEnvVar];
+  const providerEnvVar = {
+    image: 'IMAGE_PROVIDER',
+    audio: 'AUDIO_PROVIDER',
+    video: 'VIDEO_PROVIDER',
+  }[category];
+  const legacyProviderEnvVar = category === 'image' ? 'ART_PROVIDER' : '';
+  const providerName = process.env[providerEnvVar] || (legacyProviderEnvVar ? process.env[legacyProviderEnvVar] : '');
 
   if (!providerName) {
-    return { skipped: true, reason: `no provider configured (set ${providerEnvVar})` };
+    return {
+      skipped: true,
+      reason: `no provider configured (set ${providerEnvVar}${legacyProviderEnvVar ? ` or ${legacyProviderEnvVar}` : ''})`,
+    };
   }
 
   let provider;
@@ -606,6 +909,11 @@ async function loadProvider(category) {
 
   if (typeof provider.generate !== 'function') {
     throw new Error(`provider "${providerName}" must export generate()`);
+  }
+  if (Array.isArray(provider.categories) && !provider.categories.includes(category)) {
+    throw new Error(
+      `provider "${providerName}" does not support ${category} assets (supports: ${provider.categories.join(', ') || 'none'})`
+    );
   }
 
   return { skipped: false, providerName, provider };
@@ -620,43 +928,40 @@ async function runBatch(args) {
   const manifestContent = readFileSync(manifestPath, 'utf8');
   const parsed = parseAssetsManifest(manifestContent).map((asset) => normalizeAssetFromManifest(asset, manifestPath));
   printMigrationWarnings(parsed);
+  const repoRoot = resolve(dirname(manifestPath), '..');
+  const engine = detectEngine(repoRoot, args.engine);
+  const manifestValidation = validateManifest(manifestPath, engine);
+  const styleProfile = manifestValidation.styleProfile;
+  const validationFailures = manifestValidation.failures;
+  const invalidKeys = new Set(validationFailures.map((item) => item.key));
 
   const keyFilter = args.key ? args.key.trim() : '';
   const candidates = parsed.filter((asset) => {
-    if (keyFilter) return asset.key === keyFilter;
-    return asset.status === 'needs-generation';
+    if (keyFilter) return asset.key === keyFilter && !invalidKeys.has(asset.key);
+    return asset.status === 'needs-generation' && !invalidKeys.has(asset.key);
   });
-
-  if (!candidates.length) {
-    console.log('[skip] no assets to generate');
-    return;
-  }
-
-  const validationFailures = [];
-  const validAssets = [];
-  for (const asset of candidates) {
-    const errors = validateAsset(asset);
-    if (errors.length) {
-      validationFailures.push({ key: asset.key, errors });
-    } else {
-      validAssets.push(asset);
-    }
-  }
 
   for (const item of validationFailures) {
     appendLog({
       key: item.key,
       status: 'failed',
       stage: 'validation',
-      errors: item.errors,
+      errors: [item.error],
       timestamp: new Date().toISOString(),
     });
-    console.error(`[validation] ${item.key}: ${item.errors.join('; ')}`);
+    console.error(`[validation] ${item.key}: ${item.error}`);
   }
 
   const continueOnError = normalizeBool(args['continue-on-error'], true);
+  if (validationFailures.length) process.exitCode = 1;
   if (validationFailures.length && !continueOnError) {
     throw new Error('validation failed and continue-on-error is false');
+  }
+  const validAssets = candidates;
+
+  if (!candidates.length) {
+    console.log('[skip] no assets to generate');
+    return;
   }
 
   const runId = args['run-id'] || crypto.randomUUID();
@@ -693,6 +998,7 @@ async function runBatch(args) {
       timeoutMs,
       maxRetries: boundedRetries,
       runId,
+      styleProfile,
     });
 
     if (result.status === 'failed') {
@@ -716,7 +1022,7 @@ async function runDebugSingle(args) {
   const { key, category, prompt, out } = args;
   if (!key || !category || !prompt || !out) {
     console.error(
-      'Debug usage: generate.mjs --key <asset-key> --category <art|audio> --prompt "<prompt>" --out <path> [--dry-run]'
+      'Debug usage: generate.mjs --key <asset-key> --category <image|audio|video> --prompt "<prompt>" --out <path> [--dry-run]'
     );
     process.exit(1);
   }
@@ -747,6 +1053,7 @@ async function runDebugSingle(args) {
     timeoutMs,
     maxRetries: boundedRetries,
     runId: args['run-id'] || crypto.randomUUID(),
+    styleProfile: loadStyleProfile(resolve(process.cwd()), detectEngine(resolve(process.cwd()), args.engine)),
   });
 
   if (result.status === 'failed') {
@@ -764,7 +1071,7 @@ function printHelp() {
   console.log('  node generate.mjs --key <asset-key> [--manifest <path>]   # single-key from manifest');
   console.log('');
   console.log('Debug single asset mode:');
-  console.log('  node generate.mjs --key <key> --category <art|audio> --prompt "..." --out <path> [--dry-run]');
+  console.log('  node generate.mjs --key <key> --category <image|audio|video> --prompt "..." --out <path> [--dry-run]');
   console.log('');
   console.log('Common options:');
   console.log('  --max-retries <n> --timeout-ms <ms> --run-id <id>');
@@ -788,7 +1095,19 @@ async function main() {
   await runBatch(args);
 }
 
-main().catch((err) => {
-  console.error(`[error] ${err.message}`);
-  process.exit(1);
-});
+if (resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    console.error(`[error] ${err.message}`);
+    process.exit(1);
+  });
+}
+
+export {
+  DEFAULT_MANIFEST,
+  detectEngine,
+  loadStyleProfile,
+  normalizeAssetFromManifest,
+  parseAssetsManifest,
+  validateManifest,
+  validateAsset,
+};

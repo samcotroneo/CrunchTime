@@ -6,6 +6,9 @@ game rendered with Phaser 3. Owned by: Designer. Does not restate the root
 policy; only adds/constrains where a Phaser project needs concrete rules
 the root doc can't assume.
 
+## style_profile_version
+`1.0.0`
+
 ## Camera
 - State the intended camera/framing once here (top-down, side-scroller,
   isometric, fixed-screen) and keep every scene consistent with it. Mixing
@@ -41,6 +44,16 @@ the root doc can't assume.
   background decoration.
 - UI/HUD art follows the same color system as world art but should sit in
   a value range that stays legible over any background tile in the game.
+
+## Audio direction
+- Audio assets must support the game's intended pace and mood without
+  masking gameplay feedback; brief loop points and loudness targets
+  explicitly.
+
+## Motion / video
+- Video captures use the same camera, palette, silhouette, and world
+  readability rules as gameplay, with timing that does not obscure the
+  intended action.
 
 ## Applies on top of
 `docs/ART_STYLE.md` (root policy, cohesion rules, style profile version,

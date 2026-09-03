@@ -25,15 +25,15 @@ and how work moves between agents.
    `docs/ARCHITECTURE.md §Engine notes`.
 3. App Engineer only starts once the relevant SPEC section is marked
    `status: ready` AND Engine Expert has written its notes.
-3. Reviewer is always a gate. No feature moves to QA until Reviewer has
+4. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.
-4. QA is always last in a feature's lifecycle, never parallel to Engineer
+5. QA is always last in a feature's lifecycle, never parallel to Engineer
    on the same feature.
-5. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
+6. Lead runs retros at the cadence defined in `docs/EVAL.md` — via
    `.github/chatmodes/retro.chatmode.md` or `node tools/retro/retro.mjs`.
-6. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
+7. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
-7. Changes to `docs/ART_STYLE.md` (or its `style_profile_version`) require
+8. Changes to `docs/ART_STYLE.md` (or its `style_profile_version`) require
    Designer sign-off logged in `docs/TASKS.md` before any agent briefs new
    assets against the new version — see `docs/ART_STYLE.md` for the
    approval gate and `docs/ASSETS.md` for how briefs pin a version.

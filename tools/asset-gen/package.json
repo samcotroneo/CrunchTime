@@ -4,6 +4,7 @@
   "type": "module",
   "engines": { "node": ">=18" },
   "scripts": {
-    "generate": "node generate.mjs"
+    "generate": "node generate.mjs",
+    "validate": "node validate-assets.mjs"
   }
 }

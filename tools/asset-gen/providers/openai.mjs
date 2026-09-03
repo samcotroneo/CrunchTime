@@ -1,10 +1,12 @@
-// Art provider backed by OpenAI image APIs.
-// Selected when ART_PROVIDER=openai in tools/asset-gen/.env.
+// Image provider backed by OpenAI image APIs.
+// Selected when IMAGE_PROVIDER=openai in tools/asset-gen/.env.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname } from 'node:path';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1';
+
+export const categories = ['image'];
 
 function resolveSize(output) {
   const width = output?.width;

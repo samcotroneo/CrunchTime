@@ -6,6 +6,9 @@ Capacitor (web-tech, native-shell) app. Owned by: Designer. Does not
 restate the root policy; only adds/constrains where an app/web project
 needs concrete rules the root doc can't assume.
 
+## style_profile_version
+`1.0.0`
+
 ## Visual system consistency
 - Define the design system tokens once (see Spacing & tokens below) and
   require every screen/component brief to reference them by name rather
@@ -49,6 +52,16 @@ needs concrete rules the root doc can't assume.
 - Illustrations/icons must remain legible at the smallest size they're
   actually rendered at (e.g. tab bar icon, list row icon), not just at
   the size they were generated.
+
+## Audio direction
+- Audio assets must support the product's intended pace and mood without
+  masking alerts or interaction feedback; brief loop points and loudness
+  targets explicitly.
+
+## Motion / video
+- Motion follows the app's component transitions and respects reduced-motion
+  settings; video framing must preserve the same spacing and visual hierarchy
+  as the screen where it appears.
 
 ## Applies on top of
 `docs/ART_STYLE.md` (root policy, cohesion rules, style profile version,

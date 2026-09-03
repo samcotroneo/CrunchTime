@@ -21,7 +21,9 @@ Defined per project in `docs/ARCHITECTURE.md`, stamped from
 - All generated or commissioned assets must satisfy `docs/ART_STYLE.md`
   (root art-direction policy) plus the active engine's
   `engines/<engine>/ART_STYLE.md` overlay — including assets produced by
-  external skills/agents outside `tools/asset-gen/`.
+  external skills/agents outside `tools/asset-gen/`. Asset categories are
+  deliberately separated as image, audio, and video; follow the matching
+  contract in `docs/ASSETS.md`.
 
 ## Agent model routing defaults
 - Lead/coordinator work defaults to `gpt-5.6-sol` with `reasoning_effort: high`.

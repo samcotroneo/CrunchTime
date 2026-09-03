@@ -14,7 +14,7 @@ engines/<name>/
   SPEC.md           template stamped into docs/SPEC.md by project init (optional; falls back to generic)
   SQUAD.md          template stamped into docs/SQUAD.md by project init (domain-specific role names)
   conventions.md    stack + coding conventions for this engine (linked from AGENTS.md)
-  ART_STYLE.md      art-direction overlay for this engine (linked from docs/ART_STYLE.md);
+  ART_STYLE.md      versioned art-direction overlay for this engine (linked from docs/ART_STYLE.md);
                      narrows the root policy for game vs. app/web constraints
 ```
 
@@ -22,9 +22,10 @@ engines/<name>/
 near the top so the init flow can detect which engine a project currently
 uses, and must keep the `## Stack` heading. All other section headings are
 pack-defined. Packs that support the architecture questionnaire (screen flow,
-state management) should include `## Scene flow`, `## State management`, and
-`## Asset pipeline` headings — the init flow edits those sections in place
-when present. Packs that define `engineExpertQuestions` should also include a
+state management) should include `## Scene flow` (or `## App / screen flow`),
+`## State management`, and `## Asset pipeline` headings — the init flow edits
+those sections in place.
+Packs that define `engineExpertQuestions` should also include a
 `## Engine notes` heading — the init flow writes engine expert answers there.
 
 `SPEC.md` templates let a pack provide domain-specific product spec sections
@@ -63,9 +64,9 @@ enrich it with further research after init.
 2. Edit `pack.json`, `ARCHITECTURE.md`, `SPEC.md`, and `conventions.md` for the engine.
 3. Add `engineExpertQuestions` to `pack.json` (optional but recommended) and
    add a `## Engine notes` section to `ARCHITECTURE.md`.
-4. Add `ART_STYLE.md` narrowing `docs/ART_STYLE.md` for this engine's domain
+4. Add a versioned `ART_STYLE.md` narrowing `docs/ART_STYLE.md` for this engine's domain
    (game engines: camera/sprites/tilesets/world readability; app/web
    engines: visual system/typography/spacing/tokens/iconography/
    accessibility).
-5. Nothing else to wire up — `tools/project-init/init-project.mjs` discovers
-   packs by scanning this directory.
+5. Ensure the pack's `ART_STYLE.md` and `SQUAD.md` are present; project init
+   validates and stamps both when switching engines.

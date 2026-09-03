@@ -1,8 +1,12 @@
-// Template for a provider (art or audio).
+// Template for a provider (image, audio, or video).
 //
 // 1. Copy this file to providers/<name>.mjs
 // 2. Implement generate() below
-// 3. Set ART_PROVIDER or AUDIO_PROVIDER to <name> in tools/asset-gen/.env
+// 3. Set IMAGE_PROVIDER, AUDIO_PROVIDER, or VIDEO_PROVIDER to <name> in
+//    tools/asset-gen/.env
+//
+// Optional capability declaration:
+// export const categories = ['image']; // or ['audio'], ['video'], etc.
 //
 // Provider contract:
 // generate({ prompt, outputPath, dryRun, output, referenceImages, key, category })

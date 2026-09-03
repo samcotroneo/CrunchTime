@@ -16,12 +16,15 @@ defines versioning and the release checklist; history lives in
 1. Milestone exit criteria in `docs/SPEC.md` met (milestone status →
    `reached`).
 2. No `open` or `in-progress` blocker/major bugs in `docs/BUGS.md`.
-3. Assets rebuilt: `assets/build/` current with `docs/ASSETS.md`.
-4. Build/export using the current engine pack's conventions
+3. Art direction approved: root and engine profiles are current, reference
+   boards are populated, and `node tools/asset-gen/validate-assets.mjs`
+   passes.
+4. Assets rebuilt: `assets/build/` current with `docs/ASSETS.md`.
+5. Build/export using the current engine pack's conventions
    (`engines/<engine>/conventions.md`).
-5. Changelog: `node tools/release/release.mjs --version <x.y.z>` (previews,
+6. Changelog: `node tools/release/release.mjs --version <x.y.z>` (previews,
    then re-run with `--yes`).
-6. `git tag v<x.y.z>` and push.
+7. `git tag v<x.y.z>` and push.
 
 ## Hotfixes
 
