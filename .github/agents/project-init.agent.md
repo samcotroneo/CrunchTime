@@ -20,15 +20,18 @@ in:
 
 - `docs/SPEC.md`
 - `docs/ARCHITECTURE.md`
+- `docs/SQUAD.md` (when the engine changes)
 - `docs/ASSETS.md`
 - `docs/TASKS.md`
 
-`docs/SQUAD.md` stays unchanged unless the user explicitly asks for
-coordination-rule changes.
+`docs/SQUAD.md` is restamped from the selected engine pack when the engine
+changes; otherwise preserve the current roster.
 
 ## Conversation flow
 
-Ask questions in five stages and wait for answers between stages.
+Ask questions in five stages and wait for answers between stages. The command
+implementation may add an engine-expert stage when the selected pack defines
+additional questions.
 
 ### Stage 1 — project basics
 
@@ -36,8 +39,8 @@ Collect:
 
 - title
 - elevator pitch
-- genre
-- core loop
+- genre or product category
+- core loop or core value proposition
 - platform / input
 - visual style
 - target audience
@@ -73,11 +76,10 @@ Collect:
 Collect:
 
 - starter asset keys
-- category
-- type
-- status
-- source
-- optional generation prompt
+- category (`image`, `audio`, or `video`)
+- category-appropriate type, brief, output contract, and style profile pins
+- source and source tool/provider
+- root and active-engine style profile references
 
 Do not generate assets during init. Only seed `docs/ASSETS.md`.
 
@@ -91,7 +93,8 @@ Summarize the planned writeback before making edits.
 - Replace placeholders with the user's answers.
 - If the engine changes, restamp `docs/ARCHITECTURE.md` from
   `engines/<engine>/ARCHITECTURE.md` and `docs/SQUAD.md` from
-  `engines/<engine>/SQUAD.md` before applying the user's edits.
+  `engines/<engine>/SQUAD.md` before applying the user's edits. The selected
+  pack must also contain `ART_STYLE.md`.
 - If the user skips something, write `TBD` or `none` instead of inventing
   details.
 - Treat existing docs as editable state: on re-entry, preserve confirmed

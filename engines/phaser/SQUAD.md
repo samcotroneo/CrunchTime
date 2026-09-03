@@ -8,12 +8,12 @@ and how work moves between agents.
 | Agent | Owns | Can run in parallel with |
 |---|---|---|
 | Lead | Routing, breaking the spec into tasks, retros | — (coordinates the rest) |
-| Designer | `docs/SPEC.md`, level/mechanic specs | Build Engineer |
+| Designer | `docs/SPEC.md`, level/mechanic specs, `docs/ART_STYLE.md` root policy + `engines/<engine>/ART_STYLE.md` overlay, approval of any style profile change | Build Engineer |
 | Engine Expert | `docs/ARCHITECTURE.md` §Engine notes (one-shot at init) | Designer, Build Engineer |
 | Gameplay Engineer | `src/` implementation | — |
-| Build Engineer | Build config, asset packing, `tools/asset-gen/`, releases | Designer, Engine Expert |
+| Build Engineer | Build config, asset generation tooling (`tools/asset-gen/`), packing/import pipeline, `docs/ASSETS.md` schema + CI checks, releases | Designer, Engine Expert |
 | Reviewer | Code review against `AGENTS.md` conventions | — |
-| QA | Playtesting, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits | — |
+| QA | Playtesting, bug reports (`docs/BUGS.md`), `docs/ASSETS.md` audits, conformance of generated/commissioned assets to `docs/ART_STYLE.md` | — |
 
 ## Coordination rules
 
@@ -25,15 +25,19 @@ and how work moves between agents.
    `docs/ARCHITECTURE.md §Engine notes`.
 3. Gameplay Engineer only starts once the relevant SPEC section is marked
    `status: ready` AND Engine Expert has written its notes.
-3. Reviewer is always a gate. No feature moves to QA until Reviewer has
+4. Reviewer is always a gate. No feature moves to QA until Reviewer has
    signed off in `docs/TASKS.md`.
-4. QA is always last in a feature's lifecycle, never parallel to Engineer
+5. QA is always last in a feature's lifecycle, never parallel to Engineer
    on the same feature.
-5. Lead runs retros at the cadence defined in `docs/EVAL.md` — via the
+6. Lead runs retros at the cadence defined in `docs/EVAL.md` — via the
    `retro` custom agent in `.github/agents/retro.agent.md` or
    `node tools/retro/retro.mjs`.
-6. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
+7. Bugs flow QA → Engineer → QA through `docs/BUGS.md` statuses; only QA
    marks a bug `verified`.
+8. Changes to `docs/ART_STYLE.md` (or its `style_profile_version`) require
+   Designer sign-off logged in `docs/TASKS.md` before any agent briefs new
+   assets against the new version — see `docs/ART_STYLE.md` for the
+   approval gate and `docs/ASSETS.md` for how briefs pin a version.
 
 ## Handoff protocol
 

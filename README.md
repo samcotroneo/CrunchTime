@@ -223,21 +223,39 @@ versioning, a checklist gated on bug status, and
 
 ## Adding a new engine
 Copy an existing folder in `engines/`, edit its `pack.json`,
-`ARCHITECTURE.md`, and `conventions.md`. The init flow discovers packs
-automatically — see `engines/README.md`.
+`ARCHITECTURE.md`, `conventions.md`, and `ART_STYLE.md`. The init flow
+discovers packs automatically — see `engines/README.md`.
 
-## Adding audio generation later
+## Adding media generation later
 Copy `tools/asset-gen/providers/_template.mjs` to `providers/<name>.mjs`,
-implement `generate()`, set `AUDIO_PROVIDER=<name>` in `.env`. Nothing
-else needs to change.
+implement `generate()`, and set the matching `IMAGE_PROVIDER`,
+`AUDIO_PROVIDER`, or `VIDEO_PROVIDER` in `.env`. Providers receive a
+category-specific brief and output contract.
 
 ## Structured asset generation notes
-- `docs/ASSETS.md` now carries a structured brief per `needs-generation` asset
-  (`brief_*` fields) plus output contract fields (`output_*`).
+- `docs/ASSETS.md` carries category-specific structured briefs for image,
+  audio, and video assets plus the matching output contract.
 - Optional `reference_images` lets providers condition output on local image
   references.
-- The generator writes provenance sidecars (`<asset>.meta.json`) for
-  reproducibility and audit trails.
+- The generator writes provenance sidecars (`<asset>.meta.json`) containing
+  the root/engine profile versions and content digest.
+- Validate active manifest entries before generation or release with
+  `node tools/asset-gen/validate-assets.mjs --manifest docs/ASSETS.md`.
+
+## Art direction & asset cohesion
+`docs/ART_STYLE.md` is the canonical, versioned art-direction policy every
+asset must satisfy — engine-agnostic (palette, shape language, reference
+board, style profile version). Each engine pack narrows it with
+`engines/<engine>/ART_STYLE.md` (camera/sprites/tilesets for game engines;
+visual system/typography/tokens/iconography/accessibility for app/web
+engines). Every `needs-generation` entry in `docs/ASSETS.md` pins
+`style_profile_version`/`style_profile_ref` plus, once an engine is selected,
+the active engine's `engine_style_profile_version`/`engine_style_profile_ref`,
+and this applies equally to assets produced by external skills/agents (e.g.
+Impeccable) —
+outputs from outside `tools/asset-gen/` must still satisfy the local
+`ART_STYLE`/`ASSETS` contracts before being marked `final`. Designer owns
+this policy and approves any version change (see `docs/SQUAD.md`).
 
 ## Copilot custom agents
 Reusable workflows live in `.github/agents/*.agent.md`. This is the current

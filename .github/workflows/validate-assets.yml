@@ -1,0 +1,31 @@
+name: Validate assets
+
+on:
+  pull_request:
+    paths:
+      - 'docs/ASSETS.md'
+      - 'docs/ART_STYLE.md'
+      - 'docs/ARCHITECTURE.md'
+      - 'engines/**/ART_STYLE.md'
+      - 'tools/asset-gen/**'
+      - '.github/workflows/validate-assets.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/ASSETS.md'
+      - 'docs/ART_STYLE.md'
+      - 'docs/ARCHITECTURE.md'
+      - 'engines/**/ART_STYLE.md'
+      - 'tools/asset-gen/**'
+      - '.github/workflows/validate-assets.yml'
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/asset-gen/validate-assets.mjs --manifest docs/ASSETS.md

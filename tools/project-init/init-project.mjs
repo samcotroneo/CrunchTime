@@ -47,6 +47,12 @@ function readText(path) {
   return readFileSync(path, 'utf8');
 }
 
+function readStyleProfileVersion(path, fallback) {
+  if (!existsSync(path)) return fallback;
+  const match = readText(path).match(/^## style_profile_version\s*\n+`([^`]+)`/m);
+  return match ? match[1].trim() : fallback;
+}
+
 function writeText(path, content) {
   writeFileSync(path, content.replace(/\r\n/g, '\n'));
 }
@@ -71,7 +77,7 @@ function stripTemplateValue(value, placeholders = new Set()) {
 }
 
 function parseBulletValue(content, label) {
-  const pattern = new RegExp(`^- \\*\\*${escapeRegExp(label)}:\\*\\*(.*)$`, 'm');
+  const pattern = new RegExp(`^- (?:\\*\\*)?${escapeRegExp(label)}:(?:\\*\\*)?(.*)$`, 'm');
   const match = content.match(pattern);
   return match ? match[1].trim() : '';
 }
@@ -158,6 +164,10 @@ function tryGetSection(content, startHeading, endHeading) {
   const end = endHeading ? content.indexOf(endHeading, sectionStart) : content.length;
   if (endHeading && end === -1) return '';
   return content.slice(sectionStart, end).trim();
+}
+
+function firstHeading(content, headings) {
+  return headings.find((heading) => content.includes(heading)) || '';
 }
 
 function parseSpec(content) {
@@ -287,13 +297,15 @@ function parseSpec(content) {
 }
 
 function parseArchitecture(content) {
+  const sceneHeading = firstHeading(content, ['## Scene flow', '## App / screen flow', '## App / scene flow']);
+  const stateHeading = '## State management';
   return {
     engine: detectEngine(content),
     sceneFlow: stripArchitecturePlaceholder(
-      tryGetSection(content, '## Scene flow', '## State management').trim()
+      sceneHeading ? tryGetSection(content, sceneHeading, stateHeading).trim() : ''
     ),
     stateManagement: stripArchitecturePlaceholder(
-      tryGetSection(content, '## State management', '## Asset pipeline').trim()
+      tryGetSection(content, stateHeading, '## Asset pipeline').trim()
     ),
   };
 }
@@ -334,11 +346,24 @@ function resolveEngine(engineName, engines, enginesRoot) {
     throw new Error(`Unknown engine "${name}". Available packs in engines/: ${available}`);
   }
   const specCandidate = join(enginesRoot, name, 'SPEC.md');
+  const artStylePath = join(enginesRoot, name, 'ART_STYLE.md');
+  const squadTemplatePath = join(enginesRoot, name, 'SQUAD.md');
   const engineEntry = engines.find((e) => e.name === name);
+  if (!existsSync(artStylePath)) {
+    throw new Error(`Engine pack "${name}" is missing ART_STYLE.md.`);
+  }
+  if (!readStyleProfileVersion(artStylePath, '')) {
+    throw new Error(`Engine pack "${name}" ART_STYLE.md is missing style_profile_version.`);
+  }
+  if (!existsSync(squadTemplatePath)) {
+    throw new Error(`Engine pack "${name}" is missing SQUAD.md.`);
+  }
   return {
     name,
     templatePath: join(enginesRoot, name, 'ARCHITECTURE.md'),
     specTemplatePath: existsSync(specCandidate) ? specCandidate : null,
+    artStylePath,
+    squadTemplatePath,
     engineExpertQuestions: engineEntry?.engineExpertQuestions ?? [],
   };
 }
@@ -348,12 +373,46 @@ function parseAssets(content) {
   return parseNamedBlocks(assetsSection)
     .map((block) => {
       const blockText = block.lines.join('\n');
+      const rawFields = {};
+      for (const line of block.lines) {
+        const match = line.match(/^\s*-\s*([a-zA-Z0-9_-]+):\s*(.*)$/);
+        if (match) rawFields[match[1].toLowerCase()] = match[2].trim();
+      }
       return {
         key: block.title,
-        category: parseBulletValue(blockText, 'category'),
+        rawFields,
+        category: parseBulletValue(blockText, 'category').toLowerCase() === 'art'
+          ? 'image'
+          : parseBulletValue(blockText, 'category'),
         type: parseBulletValue(blockText, 'type'),
         status: parseBulletValue(blockText, 'status'),
         source: parseBulletValue(blockText, 'source'),
+        sourceTool: parseBulletValue(blockText, 'source_tool'),
+        briefSubject: parseBulletValue(blockText, 'brief_subject'),
+        briefStyle: parseBulletValue(blockText, 'brief_style'),
+        briefCamera: parseBulletValue(blockText, 'brief_camera'),
+        briefPalette: parseBulletValue(blockText, 'brief_palette'),
+        briefMood: parseBulletValue(blockText, 'brief_mood'),
+        briefConstraints: parseBulletValue(blockText, 'brief_constraints'),
+        briefNegativeConstraints: parseBulletValue(blockText, 'brief_negative_constraints'),
+        briefOutputSpec: parseBulletValue(blockText, 'brief_output_spec'),
+        briefTempo: parseBulletValue(blockText, 'brief_tempo'),
+        briefLooping: parseBulletValue(blockText, 'brief_looping'),
+        briefTimeline: parseBulletValue(blockText, 'brief_timeline'),
+        outputPath: parseBulletValue(blockText, 'output_path'),
+        outputFormat: parseBulletValue(blockText, 'output_format'),
+        outputWidth: parseBulletValue(blockText, 'output_width'),
+        outputHeight: parseBulletValue(blockText, 'output_height'),
+        outputTransparentBackground: parseBulletValue(blockText, 'output_transparent_background'),
+        outputFps: parseBulletValue(blockText, 'output_fps'),
+        outputDurationSeconds: parseBulletValue(blockText, 'output_duration_seconds'),
+        outputSampleRate: parseBulletValue(blockText, 'output_sample_rate'),
+        outputChannels: parseBulletValue(blockText, 'output_channels'),
+        styleProfileVersion: parseBulletValue(blockText, 'style_profile_version'),
+        styleProfileRef: parseBulletValue(blockText, 'style_profile_ref'),
+        engineStyleProfileVersion: parseBulletValue(blockText, 'engine_style_profile_version'),
+        engineStyleProfileRef: parseBulletValue(blockText, 'engine_style_profile_ref'),
+        referenceImages: parseBulletValue(blockText, 'reference_images'),
         generation: parseBulletValue(blockText, 'generation'),
       };
     })
@@ -370,6 +429,11 @@ function asRecord(value) {
 
 function asString(value, fallback = '') {
   return typeof value === 'string' ? value : fallback;
+}
+
+function asText(value, fallback = '') {
+  if (value === undefined || value === null) return fallback;
+  return `${value}`;
 }
 
 function asObjectArray(value) {
@@ -407,7 +471,7 @@ async function collectRepeatedEntries(rl, label, existingEntries, defaultsFactor
     const current = existingEntries[index] ?? defaultsFactory(index);
     console.log(`\n${label.slice(0, 1).toUpperCase()}${label.slice(1)} ${index + 1}`);
     const questions = questionFactory(current, index);
-    const entry = {};
+    const entry = { ...current };
 
     for (const question of questions) {
       entry[question.key] = await ask(rl, question.label, current[question.key], question.options);
@@ -628,17 +692,84 @@ function buildAssetsSection(assets) {
 
   return assets
     .map((asset) => {
-      const lines = [
-        `### ${cleanValue(asset.key, 'tbd-asset')}`,
-        `- category: ${cleanValue(asset.category)}`,
-        `- type: ${cleanValue(asset.type)}`,
-        `- status: ${cleanValue(asset.status)}`,
-        `- source: ${cleanValue(asset.source)}`,
+      const fieldValues = {
+        ...(asset.rawFields || {}),
+        category: asset.category,
+        type: asset.type,
+        status: asset.status,
+        source: asset.source,
+        source_tool: asset.sourceTool,
+        brief_subject: asset.briefSubject,
+        brief_style: asset.briefStyle,
+        brief_camera: asset.briefCamera,
+        brief_palette: asset.briefPalette,
+        brief_mood: asset.briefMood,
+        brief_constraints: asset.briefConstraints,
+        brief_negative_constraints: asset.briefNegativeConstraints,
+        brief_output_spec: asset.briefOutputSpec,
+        brief_tempo: asset.briefTempo,
+        brief_looping: asset.briefLooping,
+        brief_timeline: asset.briefTimeline,
+        output_path: asset.outputPath,
+        output_format: asset.outputFormat,
+        output_width: asset.outputWidth,
+        output_height: asset.outputHeight,
+        output_transparent_background: asset.outputTransparentBackground,
+        output_fps: asset.outputFps,
+        output_duration_seconds: asset.outputDurationSeconds,
+        output_sample_rate: asset.outputSampleRate,
+        output_channels: asset.outputChannels,
+        style_profile_version: asset.styleProfileVersion,
+        style_profile_ref: asset.styleProfileRef,
+        engine_style_profile_version: asset.engineStyleProfileVersion,
+        engine_style_profile_ref: asset.engineStyleProfileRef,
+        reference_images: asset.referenceImages,
+        generation: asset.generation,
+      };
+      const fieldOrder = [
+        'category',
+        'type',
+        'status',
+        'source',
+        'source_tool',
+        'brief_subject',
+        'brief_style',
+        'brief_camera',
+        'brief_palette',
+        'brief_mood',
+        'brief_constraints',
+        'brief_negative_constraints',
+        'brief_output_spec',
+        'brief_tempo',
+        'brief_looping',
+        'brief_timeline',
+        'output_path',
+        'output_format',
+        'output_width',
+        'output_height',
+        'output_transparent_background',
+        'output_fps',
+        'output_duration_seconds',
+        'output_sample_rate',
+        'output_channels',
+        'style_profile_version',
+        'style_profile_ref',
+        'engine_style_profile_version',
+        'engine_style_profile_ref',
+        'reference_images',
+        'generation',
       ];
-
-      const generation = cleanOptional(asset.generation);
-      if (generation !== NONE) {
-        lines.push(`- generation: ${generation}`);
+      const lines = [`### ${cleanValue(asset.key, 'tbd-asset')}`];
+      for (const field of fieldOrder) {
+        const value = fieldValues[field];
+        if (value === undefined || value === '') continue;
+        if (field === 'generation' && cleanOptional(value) === NONE) continue;
+        lines.push(`- ${field}: ${cleanValue(value)}`);
+      }
+      const knownFields = new Set(['key', ...fieldOrder]);
+      for (const [field, value] of Object.entries(fieldValues)) {
+        if (knownFields.has(field) || value === undefined || value === '') continue;
+        lines.push(`- ${field}: ${cleanValue(value)}`);
       }
 
       return lines.join('\n');
@@ -659,7 +790,7 @@ function buildEngineNotesSection(engineExpert) {
 function appendTaskEntry(content, answers, agentName) {
   const entry = [
     `### ${getTodayDateString()} — ${cleanValue(agentName, 'Project Init')} — project init`,
-    `**Did:** Ran the project init questionnaire and updated \`docs/SPEC.md\`, \`docs/ARCHITECTURE.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
+    `**Did:** Ran the project init questionnaire and updated \`docs/SPEC.md\`, \`docs/ARCHITECTURE.md\`, \`docs/SQUAD.md\`, and \`docs/ASSETS.md\` for "${cleanValue(answers.overview.title)}" (engine: ${cleanValue(answers.engine)}).`,
     '**Why:** Establish a usable project brief and seed the design docs before implementation starts.',
     '**Status:** done',
     '**Review cycles:** 0',
@@ -701,7 +832,7 @@ function printSummary(answers) {
   }
 }
 
-async function collectInteractiveAnswers(existing, engines) {
+async function collectInteractiveAnswers(existing, engines, repoRoot) {
   const rl = readline.createInterface({ input, output });
 
   try {
@@ -857,36 +988,119 @@ async function collectInteractiveAnswers(existing, engines) {
       `Engine — one of: ${engineOptions}`,
       existing.architecture.engine || DEFAULT_ENGINE
     );
+    const sceneFlowLabel = ['capacitor', 'react-native'].includes(`${engine}`.trim().toLowerCase())
+      ? 'App / screen flow'
+      : 'Scene flow';
+    const rootStyleVersion = readStyleProfileVersion(join(repoRoot, 'docs', 'ART_STYLE.md'), 'TBD');
+    const engineStyleVersion = readStyleProfileVersion(
+      join(repoRoot, 'engines', `${engine}`.trim().toLowerCase(), 'ART_STYLE.md'),
+      'TBD'
+    );
     const architecture = {
-      sceneFlow: await ask(rl, 'Scene flow', existing.architecture.sceneFlow),
+      sceneFlow: await ask(rl, sceneFlowLabel, existing.architecture.sceneFlow),
       stateManagement: await ask(rl, 'State management / persistence', existing.architecture.stateManagement),
     };
 
     console.log('\nStage 4 — starter assets');
+    const resolvedEngineName = `${engine ?? ''}`.trim().toLowerCase() || DEFAULT_ENGINE;
     const assets = await collectRepeatedEntries(
       rl,
       'assets',
       existing.assets,
       () => ({
         key: '',
-        category: '',
+        category: 'image',
         type: '',
         status: 'placeholder',
         source: '',
+        sourceTool: '',
+        briefSubject: '',
+        briefStyle: '',
+        briefCamera: '',
+        briefPalette: '',
+        briefMood: '',
+        briefConstraints: '',
+        briefNegativeConstraints: '',
+        briefOutputSpec: '',
+        briefTempo: '',
+        briefLooping: '',
+        briefTimeline: '',
+        outputPath: '',
+        outputFormat: '',
+        outputWidth: '',
+        outputHeight: '',
+        outputTransparentBackground: '',
+        outputFps: '',
+        outputDurationSeconds: '',
+        outputSampleRate: '',
+        outputChannels: '',
+        styleProfileVersion: rootStyleVersion,
+        styleProfileRef: 'docs/ART_STYLE.md#visual-pillars',
+        engineStyleProfileVersion: engineStyleVersion,
+        engineStyleProfileRef: '',
+        referenceImages: '',
         generation: NONE,
       }),
-      () => [
+      (current) => {
+        const category = current.category.toLowerCase() === 'art' ? 'image' : current.category.toLowerCase();
+        return [
         { key: 'key', label: 'Asset key' },
         { key: 'category', label: 'Category' },
         { key: 'type', label: 'Type' },
         { key: 'status', label: 'Status', options: { fallback: 'placeholder' } },
         { key: 'source', label: 'Source' },
-        { key: 'generation', label: 'Generation prompt', options: { fallback: NONE } },
-      ]
+        { key: 'sourceTool', label: 'Source tool / provider', options: { fallback: NONE } },
+        { key: 'briefSubject', label: 'Brief subject' },
+        { key: 'briefStyle', label: 'Brief style' },
+        ...(category === 'image' || category === 'video'
+          ? [
+              { key: 'briefCamera', label: 'Brief camera / framing' },
+              { key: 'briefPalette', label: 'Brief palette' },
+            ]
+          : []),
+        { key: 'briefMood', label: 'Brief mood' },
+        { key: 'briefConstraints', label: 'Brief constraints' },
+        { key: 'briefNegativeConstraints', label: 'Brief negative constraints' },
+        { key: 'briefOutputSpec', label: 'Brief output spec' },
+        ...(category === 'audio'
+          ? [
+              { key: 'briefTempo', label: 'Brief tempo / pacing' },
+              { key: 'briefLooping', label: 'Brief looping' },
+            ]
+          : []),
+        ...(category === 'video' ? [{ key: 'briefTimeline', label: 'Brief timeline' }] : []),
+        { key: 'outputPath', label: 'Output path' },
+        { key: 'outputFormat', label: 'Output format' },
+        ...(category === 'image' || category === 'video'
+          ? [
+              { key: 'outputWidth', label: 'Output width (px)' },
+              { key: 'outputHeight', label: 'Output height (px)' },
+              { key: 'outputTransparentBackground', label: 'Transparent background (true/false)' },
+            ]
+          : []),
+        ...(category === 'video'
+          ? [
+              { key: 'outputFps', label: 'Output frame rate (fps)' },
+              { key: 'outputDurationSeconds', label: 'Output duration (seconds)' },
+            ]
+          : []),
+        ...(category === 'audio'
+          ? [
+              { key: 'outputSampleRate', label: 'Output sample rate (Hz)', options: { fallback: NONE } },
+              { key: 'outputChannels', label: 'Output channels', options: { fallback: NONE } },
+            ]
+          : []),
+        { key: 'styleProfileVersion', label: 'Root style profile version', options: { fallback: rootStyleVersion } },
+        { key: 'styleProfileRef', label: 'Root style profile reference' },
+        { key: 'engineStyleProfileVersion', label: 'Engine style profile version', options: { fallback: engineStyleVersion } },
+        { key: 'engineStyleProfileRef', label: 'Engine style profile reference' },
+        { key: 'referenceImages', label: 'Reference images', options: { fallback: NONE } },
+        { key: 'generation', label: 'Legacy generation prompt', options: { fallback: NONE } },
+        ];
+      }
     );
 
     // Stage 5 — engine-specific details (Engine Expert questions from pack.json)
-    const resolvedEngineName = `${engine ?? ''}`.trim().toLowerCase() || DEFAULT_ENGINE;
     const engineEntry = engines.find((e) => e.name === resolvedEngineName);
     const expertQuestions = engineEntry?.engineExpertQuestions ?? [];
     const engineExpert = {};
@@ -930,11 +1144,17 @@ async function collectInteractiveAnswers(existing, engines) {
   }
 }
 
-function normalizeAnswersFromFile(raw) {
+function normalizeAnswersFromFile(raw, repoRoot) {
   const data = asRecord(raw);
   const overview = asRecord(data.overview);
   const progression = asRecord(data.progression);
   const architecture = asRecord(data.architecture);
+  const selectedEngine = asString(data.engine || architecture.engine).trim().toLowerCase() || DEFAULT_ENGINE;
+  const rootStyleVersion = readStyleProfileVersion(join(repoRoot, 'docs', 'ART_STYLE.md'), 'TBD');
+  const engineStyleVersion = readStyleProfileVersion(
+    join(repoRoot, 'engines', selectedEngine, 'ART_STYLE.md'),
+    'TBD'
+  );
 
   return {
     overview: {
@@ -985,11 +1205,46 @@ function normalizeAnswersFromFile(raw) {
       stateManagement: asString(architecture.stateManagement),
     },
     assets: asObjectArray(data.assets).map((entry) => ({
+      ...entry,
+      rawFields: Object.fromEntries(
+        Object.entries(entry).filter(([key]) => key.includes('_'))
+      ),
       key: asString(entry.key),
-      category: asString(entry.category),
+      category: asString(entry.category).toLowerCase() === 'art' ? 'image' : asString(entry.category),
       type: asString(entry.type),
       status: asString(entry.status, 'placeholder'),
       source: asString(entry.source),
+      sourceTool: asString(entry.sourceTool || entry.source_tool),
+      briefSubject: asString(entry.briefSubject || entry.brief_subject),
+      briefStyle: asString(entry.briefStyle || entry.brief_style),
+      briefCamera: asString(entry.briefCamera || entry.brief_camera),
+      briefPalette: asString(entry.briefPalette || entry.brief_palette),
+      briefMood: asString(entry.briefMood || entry.brief_mood),
+      briefConstraints: asString(entry.briefConstraints || entry.brief_constraints),
+      briefNegativeConstraints: asString(entry.briefNegativeConstraints || entry.brief_negative_constraints),
+      briefOutputSpec: asString(entry.briefOutputSpec || entry.brief_output_spec),
+      briefTempo: asString(entry.briefTempo || entry.brief_tempo),
+      briefLooping: asString(entry.briefLooping || entry.brief_looping),
+      briefTimeline: asString(entry.briefTimeline || entry.brief_timeline),
+      outputPath: asString(entry.outputPath || entry.output_path),
+      outputFormat: asString(entry.outputFormat || entry.output_format),
+      outputWidth: asText(entry.outputWidth ?? entry.output_width),
+      outputHeight: asText(entry.outputHeight ?? entry.output_height),
+      outputTransparentBackground: asText(
+        entry.outputTransparentBackground ?? entry.output_transparent_background
+      ),
+      outputFps: asText(entry.outputFps ?? entry.output_fps),
+      outputDurationSeconds: asText(entry.outputDurationSeconds ?? entry.output_duration_seconds),
+      outputSampleRate: asText(entry.outputSampleRate ?? entry.output_sample_rate),
+      outputChannels: asText(entry.outputChannels ?? entry.output_channels),
+      styleProfileVersion: asString(entry.styleProfileVersion || entry.style_profile_version, rootStyleVersion),
+      styleProfileRef: asString(entry.styleProfileRef || entry.style_profile_ref),
+      engineStyleProfileVersion: asString(
+        entry.engineStyleProfileVersion || entry.engine_style_profile_version,
+        engineStyleVersion
+      ),
+      engineStyleProfileRef: asString(entry.engineStyleProfileRef || entry.engine_style_profile_ref),
+      referenceImages: asString(entry.referenceImages || entry.reference_images, NONE),
       generation: asString(entry.generation, NONE),
     })),
     engineExpert: asRecord(data.engineExpert),
@@ -1013,6 +1268,7 @@ async function main() {
     spec: join(docsRoot, 'SPEC.md'),
     architecture: join(docsRoot, 'ARCHITECTURE.md'),
     assets: join(docsRoot, 'ASSETS.md'),
+    squad: join(docsRoot, 'SQUAD.md'),
     tasks: join(docsRoot, 'TASKS.md'),
   };
 
@@ -1043,9 +1299,9 @@ async function main() {
       throw new Error(`Failed to parse answers file "${answersPath}": ${error.message}`);
     }
 
-    answers = normalizeAnswersFromFile(parsedAnswers);
+    answers = normalizeAnswersFromFile(parsedAnswers, repoRoot);
   } else {
-    answers = await collectInteractiveAnswers(existing, engines);
+    answers = await collectInteractiveAnswers(existing, engines, repoRoot);
   }
 
   if (!answers) {
@@ -1096,11 +1352,12 @@ async function main() {
 
   // Replace architecture sections only if the headings are present in the template
   let updatedArchitecture = architectureBase;
-  if (updatedArchitecture.includes('## Scene flow') && updatedArchitecture.includes('## State management')) {
+  const sceneHeading = firstHeading(updatedArchitecture, ['## Scene flow', '## App / screen flow', '## App / scene flow']);
+  if (sceneHeading && updatedArchitecture.includes('## State management')) {
     updatedArchitecture = replaceSection(
       replaceSection(
         updatedArchitecture,
-        '## Scene flow',
+        sceneHeading,
         '## State management',
         buildArchitectureSection(answers.architecture.sceneFlow)
       ),
@@ -1120,6 +1377,12 @@ async function main() {
     );
   }
 
+  let updatedSquad = readText(paths.squad);
+  if (selectedEngine.name !== existing.architecture.engine) {
+    updatedSquad = readText(selectedEngine.squadTemplatePath);
+    console.log(`Stamping engines/${selectedEngine.name}/SQUAD.md into docs/SQUAD.md.`);
+  }
+
   const updatedAssets = replaceSection(
     readText(paths.assets),
     '## Assets',
@@ -1131,12 +1394,14 @@ async function main() {
 
   writeText(paths.spec, updatedSpec);
   writeText(paths.architecture, updatedArchitecture);
+  writeText(paths.squad, updatedSquad);
   writeText(paths.assets, updatedAssets);
   writeText(paths.tasks, updatedTasks);
 
   console.log('\nUpdated:');
   console.log(`- ${paths.spec}`);
   console.log(`- ${paths.architecture}`);
+  console.log(`- ${paths.squad}`);
   console.log(`- ${paths.assets}`);
   console.log(`- ${paths.tasks}`);
 }
