@@ -19,6 +19,18 @@ rework loops countable; always log one when Reviewer sends work back.
 
 ---
 
+### 2026-09-05 — Lead — take-the-lead agent tool access
+**Did:** Added the standard `agent` tool alias to the Take the Lead custom
+agent and made worker invocation explicit in its guardrails.
+**Why:** The profile's explicit tool allowlist excluded agent invocation, so
+the Lead could route work in prose but could not spawn the selected worker.
+**Status:** ready-for-review
+**Review cycles:** 0
+**Scope changed:** no
+**Open questions:** none
+
+---
+
 ### 2026-09-02 — Build Engineer — media asset contracts and enforcement
 **Did:** Separated asset generation into `image`, `audio`, and `video` contracts;
 added category-specific briefs, output fields, provider routing, style-profile

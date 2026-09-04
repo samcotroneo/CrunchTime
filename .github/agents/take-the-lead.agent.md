@@ -7,6 +7,7 @@ tools:
   - edit
   - search
   - execute
+  - agent
 ---
 
 # Take the Lead
@@ -47,6 +48,8 @@ Read these files before proposing work:
 - Respect access boundaries in `docs/SQUAD.md`.
 - Default to one Lead session plus one worker at a time. Do not spawn extra
   agents unless the work is truly independent.
+- Use the `agent` tool to invoke the lane-specific worker selected for the next
+  handoff.
 - Prefer this custom agent over command wrappers or extra automation unless a
   repeated workflow proves the extra surface is worth it.
 - Keep worker tasks narrowly scoped to one file area or one milestone slice.
